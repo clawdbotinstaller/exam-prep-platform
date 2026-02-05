@@ -98,15 +98,15 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
 
       <div className="px-8 lg:px-[8vw] relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-16">
-          {/* Left headline - Stitch style */}
+          {/* Left headline */}
           <div ref={headlineRef} className="lg:max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <h2 className="font-serif font-semibold text-paper-cream text-3xl lg:text-4xl xl:text-5xl leading-tight">
-                Permanent Archive Access
+                Get access to the archive
               </h2>
             </div>
             <p className="font-sans text-paper-cream/70 text-base lg:text-lg leading-relaxed mb-8">
-              One-time checkout. Unlimited renewals. Access to all 502+ problems with step-by-step solutions.
+              We review requests weekly. Students and educators welcome.
             </p>
             <div className="flex items-center gap-2 text-paper-cream/60">
               <Upload className="w-4 h-4" strokeWidth={1.5} />
@@ -116,116 +116,106 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
             </div>
           </div>
 
-          {/* Stitch Library Checkout Card */}
+          {/* Right form */}
           <div
             ref={formRef}
-            className="lg:w-[50vw] lg:max-w-xl checkout-card"
+            className="lg:w-[50vw] lg:max-w-xl bg-paper-cream rounded-sm p-6 lg:p-10 index-card"
           >
-            <div className="checkout-card-inner">
-              {/* Card Header */}
-              <div className="flex justify-between items-end border-b-2 border-blueprint-navy pb-4 mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold uppercase tracking-tighter text-blueprint-navy">
-                    Full Archive Access
-                  </h2>
-                  <p className="font-mono text-[10px] uppercase text-pencil-gray">
-                    Form: PERMANENT CHECKOUT
-                  </p>
-                </div>
-                <div className="text-4xl font-mono font-bold text-blueprint-navy">
-                  $12
-                </div>
+            {submitted ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <CheckCircle className="w-16 h-16 text-blueprint-navy mb-4" strokeWidth={1.5} />
+                <h3 className="font-serif font-semibold text-ink-black text-xl mb-2">
+                  Request received!
+                </h3>
+                <p className="font-sans text-pencil-gray text-sm">
+                  We'll review your request and get back to you within 3-5 business days.
+                </p>
               </div>
-
-              {submitted ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <CheckCircle className="w-16 h-16 text-blueprint-navy mb-4" strokeWidth={1.5} />
-                  <h3 className="font-serif font-semibold text-ink-black text-xl mb-2">
-                    Membership Confirmed!
-                  </h3>
-                  <p className="font-sans text-pencil-gray text-sm">
-                    Welcome to the archive. Your access is now active.
-                  </p>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
+                      placeholder="you@university.edu"
+                    />
+                  </div>
                 </div>
-              ) : (
-                <>
-                  {/* Checkout Details */}
-                  <div className="space-y-2 font-mono text-xs uppercase mb-8">
-                    <div className="flex justify-between">
-                      <span className="text-pencil-gray">Due Date:</span>
-                      <span className="font-semibold text-blueprint-navy">END OF SEMESTER</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-pencil-gray">Renewals:</span>
-                      <span className="font-semibold text-blueprint-navy">UNLIMITED</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-pencil-gray">Late Fees:</span>
-                      <span className="font-semibold text-blueprint-navy">NONE</span>
-                    </div>
-                  </div>
 
-                  {/* Email capture form */}
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
-                        placeholder="you@university.edu"
-                      />
-                    </div>
+                <div>
+                  <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                    School
+                  </label>
+                  <input
+                    type="text"
+                    name="school"
+                    value={formData.school}
+                    onChange={handleChange}
+                    required
+                    className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
+                    placeholder="University name"
+                  />
+                </div>
 
-                    <button
-                      type="submit"
-                      className="w-full bg-blueprint-navy text-paper-cream font-condensed text-xs uppercase tracking-widest py-4 flex items-center justify-center gap-2 hover:bg-highlighter-yellow hover:text-blueprint-navy transition-colors"
-                    >
-                      <Send className="w-4 h-4" strokeWidth={1.5} />
-                      Confirm Membership
-                    </button>
-                  </form>
+                <div>
+                  <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                    Message (optional)
+                  </label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows={4}
+                    className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors resize-none"
+                    placeholder="Tell us how you'll use the archive..."
+                  />
+                </div>
 
-                  {/* Library stamp */}
-                  <div className="text-center mt-6">
-                    <span className="library-stamp">APPROVED FOR RELEASE</span>
-                  </div>
-                </>
-              )}
-            </div>
+                <button
+                  type="submit"
+                  className="w-full bg-blueprint-navy text-paper-cream font-condensed text-xs uppercase tracking-widest py-4 flex items-center justify-center gap-2 hover:bg-ink-black transition-colors"
+                >
+                  <Send className="w-4 h-4" strokeWidth={1.5} />
+                  Request Access
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
-        {/* Technical Footer - Stitch style */}
-        <div className="mt-20 pt-8 border-t border-paper-cream/20">
-          {/* Main footer row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <span className="font-serif font-semibold text-paper-cream text-lg">
-                Calc2Archive
-              </span>
-              <span className="date-stamp !text-paper-cream !border-paper-cream/50">v1.0</span>
-            </div>
-            <p className="font-condensed text-paper-cream/50 text-[10px] uppercase tracking-widest text-center sm:text-right">
-              Real exam questions from real universities. 2022–2024.
-            </p>
+        {/* Footer */}
+        <div className="mt-20 pt-8 border-t border-paper-cream/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-serif font-semibold text-paper-cream text-lg">
+              Calc2Archive
+            </span>
+            <span className="date-stamp !text-paper-cream !border-paper-cream/50">v1.0</span>
           </div>
-
-          {/* Technical drawing footer */}
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-paper-cream/10">
-            <div className="font-mono text-[8px] text-paper-cream/40 uppercase tracking-tighter">
-              Drawing No. CALC-II-2024-REF // Technical Document // No. 0082-C2
-            </div>
-            <div className="flex items-center gap-6 font-mono text-[8px] text-paper-cream/60">
-              <span>SYSTEM: STABLE</span>
-              <span>DATA_STREAM: ACTIVE</span>
-            </div>
-          </div>
+          <p className="font-condensed text-paper-cream/50 text-[10px] uppercase tracking-widest text-center sm:text-right">
+            Real exam questions from real universities. 2022–2024.
+          </p>
         </div>
       </div>
     </section>
