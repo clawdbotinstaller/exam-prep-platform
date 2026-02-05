@@ -249,17 +249,13 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
           <div className="lg:w-[40vw] lg:max-w-xl">
             <div
               ref={imageRef}
-              className="index-card overflow-hidden aspect-[4/3] lg:aspect-auto lg:h-[56vh] relative"
+              className="index-card overflow-hidden aspect-[4/3] lg:aspect-auto lg:h-[56vh]"
             >
               <img
                 src="/hero-exam.jpg"
                 alt="Exam booklet and drafting tools"
                 className="w-full h-full object-cover"
               />
-              {/* Stitch exam stamp */}
-              <div className="absolute top-4 right-4 exam-stamp bg-paper-cream/90">
-                Actual Exam
-              </div>
             </div>
             <p
               ref={captionRef}

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Calc 2 Archive Landing Page</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;1,8..60,400&amp;family=Reenie+Beanie&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "paper-cream": "#F5F1E8",
+                        "index-card": "#EDE8DC",
+                        "blueprint-navy": "#1E3A5F",
+                        "stamp-red": "#C0392B",
+                        "highlighter-yellow": "#F4D03F",
+                        "ruler-gray": "#95A5A6",
+                    },
+                    fontFamily: {
+                        "sans": ["IBM Plex Sans Condensed", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                        "serif": ["Source Serif 4", "serif"],
+                        "handwritten": ["Reenie Beanie", "cursive"],
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .paper-grid {
+                background-color: #F5F1E8;
+                background-size: 20px 20px;
+                background-image: 
+                    linear-gradient(to right, rgba(212, 207, 196, 0.3) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(212, 207, 196, 0.3) 1px, transparent 1px);
+            }
+            .book-spine {
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                transition: all 0.2s ease;
+            }
+            .ruler-divider {
+                height: 24px;
+                background-image: repeating-linear-gradient(90deg, #95A5A6, #95A5A6 1px, transparent 1px, transparent 10px);
+                border-bottom: 1px solid #95A5A6;
+                position: relative;
+                margin: 4rem 0;
+            }
+            .ruler-divider::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 12px;
+                background-image: repeating-linear-gradient(90deg, #95A5A6, #95A5A6 1px, transparent 1px, transparent 50px);
+            }
+            .stamp-actual {
+                border: 3px solid #C0392B;
+                color: #C0392B;
+                transform: rotate(-12deg);
+                font-family: 'IBM Plex Sans Condensed', sans-serif;
+                font-weight: 800;
+                text-transform: uppercase;
+                padding: 4px 12px;
+                border-radius: 4px;
+                display: inline-block;
+            }
+            .library-stamp {
+                border: 2px solid #1E3A5F;
+                color: #1E3A5F;
+                font-family: 'JetBrains Mono', monospace;
+                padding: 2px 8px;
+                font-size: 10px;
+                text-transform: uppercase;
+                opacity: 0.7;
+            }
+        }
+    </style>
+</head>
+<body class="bg-paper-cream font-sans text-blueprint-navy antialiased min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<aside class="w-24 bg-[#2C3E50] flex flex-col items-center py-6 border-r-4 border-black/20 shadow-2xl z-30 shrink-0">
+<div class="mb-10 text-white/50">
+<span class="material-symbols-outlined text-4xl">architecture</span>
+</div>
+<nav class="flex-1 flex flex-col gap-1 w-full px-1">
+<a class="book-spine h-48 flex items-center justify-center bg-highlighter-yellow text-blueprint-navy font-bold text-xs uppercase tracking-tighter border-y border-black/10 shadow-lg" href="#">
+                CATALOGUE 2024
+            </a>
+<a class="book-spine h-48 flex items-center justify-center bg-[#34495E] hover:translate-x-1 text-white/80 font-bold text-xs uppercase tracking-tighter border-y border-black/10 shadow-md" href="#">
+                INTEGRATION VOL. I
+            </a>
+<a class="book-spine h-48 flex items-center justify-center bg-[#243447] hover:translate-x-1 text-white/60 font-bold text-xs uppercase tracking-tighter border-y border-black/10 shadow-md" href="#">
+                SERIES &amp; SEQUENCES
+            </a>
+<a class="book-spine h-48 flex items-center justify-center bg-[#1e2b3a] hover:translate-x-1 text-white/40 font-bold text-xs uppercase tracking-tighter border-y border-black/10 shadow-md" href="#">
+                ARCHIVE INDEX
+            </a>
+</nav>
+</aside>
+<main class="flex-1 flex flex-col overflow-y-auto paper-grid">
+<section class="max-w-6xl mx-auto px-8 pt-20 pb-16 w-full">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="space-y-6">
+<div class="inline-block bg-blueprint-navy text-white px-3 py-1 font-mono text-xs uppercase tracking-widest">Accession No. 2024-CALC2</div>
+<h1 class="text-6xl font-serif font-bold text-blueprint-navy leading-tight">
+                        Questions from actual <br/>
+<span class="italic underline decoration-highlighter-yellow underline-offset-8">Calc 2 midterms.</span>
+</h1>
+<p class="text-xl font-mono text-blueprint-navy/70">
+                        Not AI-generated practice. Real artifacts from university examinations.
+                    </p>
+<div class="pt-4">
+<button class="bg-blueprint-navy text-white px-10 py-5 text-lg font-bold uppercase tracking-widest hover:bg-opacity-90 transition-all shadow-xl flex items-center gap-4">
+                            Explore Archive <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="relative">
+<div class="relative z-10 bg-index-card p-6 shadow-xl border-b-2 border-r-2 border-black/5 rotate-2 max-w-sm">
+<div class="flex justify-between items-start mb-6">
+<span class="library-stamp">Integration by Parts (2023, Q4)</span>
+<div class="stamp-actual text-[10px]">Actual Exam</div>
+</div>
+<div class="font-serif italic text-sm mb-4">"Evaluate the integral of x²eˣ dx using the specified method..."</div>
+<div class="h-1 w-full bg-blueprint-navy/10"></div>
+</div>
+<div class="absolute top-12 -left-12 z-0 bg-index-card p-6 shadow-xl border-b-2 border-r-2 border-black/5 -rotate-3 max-w-sm opacity-80">
+<div class="flex justify-between items-start mb-6">
+<span class="library-stamp">Trig Substitution (2022, Q2)</span>
+</div>
+<div class="font-serif italic text-sm mb-4">"Determine the area bounded by the curve..."</div>
+<div class="h-1 w-full bg-blueprint-navy/10"></div>
+</div>
+</div>
+</div>
+</section>
+<section class="max-w-6xl mx-auto px-8 py-16 w-full">
+<div class="ruler-divider"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+<div class="p-8 border-2 border-dashed border-ruler-gray/40 rounded">
+<h3 class="font-mono text-xs uppercase text-ruler-gray mb-4">Generic Practice (Textbook)</h3>
+<p class="font-serif text-lg opacity-40 italic">"Solve for x in the basic integral..."</p>
+<p class="mt-4 text-xs font-mono text-red-800">× Too predictable. No edge cases. Missing professor's 'trick' phrasing.</p>
+</div>
+<div class="p-8 bg-index-card shadow-lg border-b-2 border-r-2 border-black/5 relative">
+<div class="absolute -top-3 -right-3 stamp-actual scale-75">Real Material</div>
+<h3 class="font-mono text-xs uppercase text-blueprint-navy mb-4">Actual Archive Question</h3>
+<p class="font-serif text-lg italic text-blueprint-navy">"Show that the series converges conditionally but not absolutely, given that..."</p>
+<p class="mt-4 text-xs font-mono text-green-800 font-bold">✓ Tests multiple concepts. Accurate difficulty. Mimics final exam layout.</p>
+</div>
+</div>
+</section>
+<section class="max-w-6xl mx-auto px-8 py-16 w-full">
+<div class="ruler-divider"></div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+<div class="space-y-4">
+<div class="text-4xl font-mono text-highlighter-yellow font-bold">01.</div>
+<h4 class="font-bold uppercase tracking-widest text-sm">Select Topic</h4>
+<p class="text-sm font-mono text-blueprint-navy/70 leading-relaxed">Browse by integration techniques, series, or polar coordinates.</p>
+</div>
+<div class="space-y-4">
+<div class="text-4xl font-mono text-highlighter-yellow font-bold">02.</div>
+<h4 class="font-bold uppercase tracking-widest text-sm">Attempt Artifact</h4>
+<p class="text-sm font-mono text-blueprint-navy/70 leading-relaxed">Work through the problem as it appeared on the original paper.</p>
+</div>
+<div class="space-y-4">
+<div class="text-4xl font-mono text-highlighter-yellow font-bold">03.</div>
+<h4 class="font-bold uppercase tracking-widest text-sm">Compare Solution</h4>
+<p class="text-sm font-mono text-blueprint-navy/70 leading-relaxed">Review the step-by-step logic approved by the review committee.</p>
+</div>
+</div>
+</section>
+<section class="max-w-4xl mx-auto px-8 py-20 w-full text-center">
+<div class="relative inline-block rotate-1">
+<div class="font-handwritten text-4xl text-blueprint-navy max-w-md mx-auto leading-tight">
+                    "Finally, problems that actually look like what my professor puts on the paper. Saved my midterm."
+                </div>
+<div class="mt-4 font-mono text-xs uppercase tracking-widest">— Alex K., Engineering Major</div>
+<div class="absolute -bottom-2 left-0 w-full h-1 bg-highlighter-yellow -z-10"></div>
+</div>
+</section>
+<section class="max-w-4xl mx-auto px-8 py-16 w-full">
+<div class="bg-[#E5DFD3] border-t-8 border-blueprint-navy p-10 shadow-inner">
+<h3 class="font-mono text-xs uppercase tracking-[0.3em] mb-10 text-center">Contents of Volume II Archive</h3>
+<div class="space-y-4 font-mono text-sm">
+<div class="flex justify-between items-center border-b border-blueprint-navy/10 pb-2">
+<span class="flex items-center gap-3"><span class="material-symbols-outlined text-xs">folder</span> 01_Techniques_of_Integration</span>
+<span class="text-ruler-gray">142 Problems</span>
+</div>
+<div class="flex justify-between items-center border-b border-blueprint-navy/10 pb-2">
+<span class="flex items-center gap-3"><span class="material-symbols-outlined text-xs">folder</span> 02_Applications_of_Integration</span>
+<span class="text-ruler-gray">89 Problems</span>
+</div>
+<div class="flex justify-between items-center border-b border-blueprint-navy/10 pb-2">
+<span class="flex items-center gap-3"><span class="material-symbols-outlined text-xs">folder</span> 03_Infinite_Series</span>
+<span class="text-ruler-gray">215 Problems</span>
+</div>
+<div class="flex justify-between items-center border-b border-blueprint-navy/10 pb-2">
+<span class="flex items-center gap-3"><span class="material-symbols-outlined text-xs">folder</span> 04_Parametric_Equations</span>
+<span class="text-ruler-gray">56 Problems</span>
+</div>
+</div>
+</div>
+</section>
+<section class="max-w-xl mx-auto px-8 py-20 w-full">
+<div class="bg-index-card p-1 border border-black/10 shadow-2xl">
+<div class="border-2 border-blueprint-navy p-8 space-y-6">
+<div class="flex justify-between items-end border-b-2 border-blueprint-navy pb-4">
+<div>
+<h2 class="text-2xl font-bold uppercase tracking-tighter">Full Archive Access</h2>
+<p class="font-mono text-[10px] uppercase">Form: PERMANENT CHECKOUT</p>
+</div>
+<div class="text-4xl font-mono font-bold">$12</div>
+</div>
+<div class="space-y-2 font-mono text-xs uppercase">
+<div class="flex justify-between"><span>DUE DATE:</span> <span>END OF SEMESTER</span></div>
+<div class="flex justify-between"><span>RENEWALS:</span> <span>UNLIMITED</span></div>
+<div class="flex justify-between"><span>LATE FEES:</span> <span>NONE</span></div>
+</div>
+<button class="w-full bg-blueprint-navy text-white py-4 font-bold uppercase tracking-widest hover:bg-highlighter-yellow hover:text-blueprint-navy transition-colors">
+                        Confirm Membership
+                    </button>
+<div class="text-center">
+<span class="library-stamp">APPROVED FOR RELEASE</span>
+</div>
+</div>
+</div>
+</section>
+<footer class="max-w-6xl mx-auto px-8 py-12 w-full border-t border-ruler-gray/30">
+<div class="flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col">
+<span class="font-mono text-[10px] uppercase tracking-widest text-ruler-gray">Built by a student, for students.</span>
+<span class="font-mono text-[10px] uppercase tracking-widest text-ruler-gray">Faculty reviews pending for 2025 additions.</span>
+</div>
+<div class="flex gap-8 text-[10px] font-mono uppercase font-bold">
+<a class="hover:text-highlighter-yellow" href="#">Privacy Log</a>
+<a class="hover:text-highlighter-yellow" href="#">Terms of Use</a>
+<a class="hover:text-highlighter-yellow" href="#">Archive FAQ</a>
+</div>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

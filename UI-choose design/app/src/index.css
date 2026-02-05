@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=Reenie+Beanie&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -14,7 +14,6 @@
     --blueprint-navy: #1E3A5F;
     --highlighter-yellow: #F4D03F;
     --red-pen: #C0392B;
-    --stamp-red: #C53030;
     
     /* shadcn compatibility */
     --background: 45 28% 94%;
@@ -154,58 +153,26 @@
     opacity: 0.5;
   }
   
-  /* Red exam stamp - from Stitch */
-  .exam-stamp {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 800;
+  /* Book spine navigation style */
+  .book-spine {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--stamp-red);
-    border: 2px solid var(--stamp-red);
-    padding: 4px 12px;
-    border-radius: 2px;
-    display: inline-block;
-    transform: rotate(-8deg);
-    opacity: 0.9;
-  }
-
-  /* Library checkout card - from Stitch */
-  .checkout-card {
+    padding: 16px 8px;
     background: var(--paper-aged);
-    border: 1px solid rgba(26, 26, 46, 0.1);
-    box-shadow:
-      0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0 2px 4px -1px rgba(0, 0, 0, 0.06),
-      0 0 0 1px rgba(26, 26, 46, 0.05);
-    padding: 4px;
+    border-left: 2px solid var(--pencil-gray);
+    color: var(--ink-black);
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
-
-  .checkout-card-inner {
-    border: 2px solid var(--blueprint-navy);
-    padding: 2rem;
-    background: var(--paper-cream);
-  }
-
-  .library-stamp {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--blueprint-navy);
-    border: 1.5px solid var(--blueprint-navy);
-    padding: 2px 8px;
-    opacity: 0.7;
-    display: inline-block;
-  }
-
-  /* Handwritten testimonial - from Stitch */
-  .handwritten {
-    font-family: 'Reenie Beanie', cursive;
-    font-size: 1.75rem;
-    line-height: 1.3;
-    color: var(--blueprint-navy);
-    transform: rotate(-1deg);
+  
+  .book-spine:hover {
+    background: var(--highlighter-yellow);
+    border-left-color: var(--blueprint-navy);
   }
   
   /* Hand-drawn highlight effect */
@@ -222,7 +189,7 @@
     right: -2px;
     height: 8px;
     background: var(--highlighter-yellow);
-    opacity: 0.4;
+    opacity: 0.5;
     z-index: -1;
     transform: skewX(-2deg) rotate(-0.5deg);
     border-radius: 1px;
