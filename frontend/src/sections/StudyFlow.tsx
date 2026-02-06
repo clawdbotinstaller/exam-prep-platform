@@ -12,24 +12,24 @@ interface StudyFlowProps {
 const steps = [
   {
     number: '01',
-    title: 'Pick a topic',
-    description: 'Start with the topic your class is covering this week. Focus on what\'s actually appearing on current exams.',
+    title: 'Run topic analysis',
+    description: 'See what repeats most and why. Costs 2 credits.',
     icon: Target,
-    math: '∫, ∑, dy/dx',
+    math: '2 cr',
   },
   {
     number: '02',
-    title: 'Solve under time',
-    description: 'Use a 15–20 minute timer to simulate exam pressure. No notes, no looking up formulas.',
-    icon: Timer,
-    math: '15-20 min',
+    title: 'Practice by pattern',
+    description: 'Generate 3-question bundles per topic. Costs 1 credit.',
+    icon: BookCheck,
+    math: '3 Qs',
   },
   {
     number: '03',
-    title: 'Review the pattern',
-    description: 'Compare your steps with the solution. Note the shortcuts and common traps.',
-    icon: BookCheck,
-    math: '✓ vs ✗',
+    title: 'Simulate a midterm',
+    description: 'Take a realistic midterm (easy / sample / hard). Costs 3 credits.',
+    icon: Timer,
+    math: '3 cr',
   },
 ];
 
@@ -179,9 +179,9 @@ export default function StudyFlow({ className = '' }: StudyFlowProps) {
         {/* Stats row */}
         <div ref={statsRef} className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mt-12 lg:mt-16 pt-12 border-t border-pencil-gray/20">
           {[
-            { value: '80+', label: 'Exam papers' },
-            { value: '340+', label: 'Problems' },
-            { value: '12', label: 'Universities' },
+            { value: '5', label: 'Free credits / month' },
+            { value: '15', label: '$10 plan credits' },
+            { value: 'Unlimited', label: '$20 plan access' },
             { value: '3', label: 'Years covered' },
           ].map((stat) => (
             <div key={stat.label} className="stat-item text-center lg:text-left">

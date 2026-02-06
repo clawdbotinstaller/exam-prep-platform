@@ -166,7 +166,8 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
               ref={subheadRef}
               className="font-sans text-pencil-gray text-base lg:text-lg leading-relaxed max-w-sm"
             >
-              We analyzed 80+ papers. Here's what shows up most.
+              We clustered similar problems across 80+ papers. Here's what repeats
+              most, even when the numbers change.
             </p>
           </div>
 
@@ -213,7 +214,7 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
               ref={captionRef}
               className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mt-8 text-right"
             >
-              Percentages reflect occurrence across midterms & finals.
+              Pattern clusters, not identical wording. Frequency across midterms & finals.
             </p>
           </div>
         </div>

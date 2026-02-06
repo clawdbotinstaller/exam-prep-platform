@@ -131,13 +131,13 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
         <div ref={titleRef} className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <h2 className="font-serif font-semibold text-ink-black text-2xl lg:text-3xl">
-              Browse the Archive
+              The Actual Questions
             </h2>
-            <span className="date-stamp">80+ Questions</span>
+            <span className="date-stamp">80+ from 2022–2024</span>
           </div>
           <p className="font-sans text-pencil-gray text-sm lg:text-base max-w-xl mb-4">
-            Questions from 5 midterms and finals, organized by topic.
-            Each includes a full worked solution.
+            These are not practice problems. They're what your professor handed out,
+            scanned and solved step-by-step. Filter by what you're weak on.
           </p>
           <div className="flex flex-wrap gap-2">
             {filters.map((filter) => (
@@ -224,7 +224,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
           </div>
         </div>
 
-        {/* Sign-up CTA Banner - softer, more informative */}
+        {/* Sign-up CTA Banner */}
         <div
           ref={ctaRef}
           className="mt-12 lg:mt-16 index-card p-6 lg:p-8"
@@ -232,18 +232,19 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="lg:max-w-lg">
               <h3 className="font-serif font-semibold text-ink-black text-lg lg:text-xl mb-2">
-                How this works
+                Stop memorizing. Start recognizing.
               </h3>
               <p className="font-sans text-pencil-gray text-sm leading-relaxed">
-                We group questions by pattern — integration by parts with polynomials,
-                ratio test with factorials, etc. You study the pattern, not just one problem.
+                That integration by parts problem? It's the same structure every time—just
+                different numbers. We tag every question by its underlying pattern so you
+                learn to spot the setup, not just solve one problem.
                 <span className="text-blueprint-navy font-medium"> Sign up free</span> to see
-                step-by-step solutions and track which patterns you've mastered.
+                the full solutions.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
               <button className="btn-blueprint">
-                Sign Up Free
+                See Full Solutions
               </button>
               <button className="inline-flex items-center justify-center gap-2 px-5 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors">
                 Learn More

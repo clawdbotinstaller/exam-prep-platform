@@ -105,19 +105,19 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
             </div>
 
             <h2 className="font-serif font-semibold text-paper-cream text-3xl lg:text-4xl xl:text-5xl leading-tight mb-4">
-              Study Patterns, Not Just Problems
+              Build Pattern Recognition
             </h2>
             <p className="font-sans text-paper-cream/70 text-base lg:text-lg leading-relaxed mb-8">
-              Create a free account to see step-by-step solutions and track your progress
-              across the patterns that actually show up on exams.
+              Free accounts see every question. Upgrade when you're ready for the solutions
+              and want to track which patterns you've mastered.
             </p>
 
             {/* Benefits list */}
             <div className="space-y-4 mb-8">
               {[
-                { title: 'Pattern-based learning', desc: 'Same structure, different numbers' },
-                { title: 'Full solutions', desc: 'Step-by-step for every question' },
-                { title: 'Track progress', desc: 'See which patterns you have down' },
+                { title: 'See every question', desc: 'Full archive, no paywall on problems' },
+                { title: 'Solutions when you need them', desc: 'Step-by-step worked by hand, not AI' },
+                { title: 'Track what you know', desc: 'Mark patterns mastered, find your gaps' },
               ].map((benefit) => (
                 <div key={benefit.title} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-highlighter-yellow flex-shrink-0 mt-0.5" strokeWidth={2} />
@@ -134,7 +134,7 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
               className="inline-flex items-center justify-center gap-2 bg-paper-cream text-blueprint-navy font-condensed text-xs uppercase tracking-widest px-6 py-3 border border-paper-cream/80 hover:bg-paper-cream/90 transition-colors"
             >
               <UserPlus className="w-4 h-4" strokeWidth={1.5} />
-              Create Free Account
+              Start Free
             </Link>
           </div>
 

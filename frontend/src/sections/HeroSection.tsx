@@ -145,17 +145,17 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
             <div ref={headlineRef} className="mb-6">
               <div className="headline-line overflow-hidden">
                 <h1 className="font-serif font-semibold text-ink-black text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-none">
-                  Real Questions
+                  Know The Exam
                 </h1>
               </div>
               <div className="headline-line overflow-hidden">
                 <h1 className="font-serif font-semibold text-ink-black text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-none">
-                  From Real
+                  Before You
                 </h1>
               </div>
               <div className="headline-line overflow-hidden">
                 <h1 className="font-serif font-semibold text-blueprint-navy text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-none hand-highlight">
-                  Exams
+                  Walk In
                 </h1>
               </div>
             </div>
@@ -165,13 +165,14 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
               ref={subheadRef}
               className="font-sans text-pencil-gray text-base lg:text-lg leading-relaxed mb-6 max-w-md"
             >
-              Midterms and finals from 2022–2024, organized by the patterns professors actually repeat.
-              Same structures, different numbers.
+              Your professor is not original. We found the patterns they recycle year after year—
+              the integration by parts setup, the ratio test they always tweak, the volume of revolution
+              that shows up every spring. Here's what they actually put on exams.
             </p>
 
             {/* Feature pills */}
             <div className="flex flex-wrap gap-2 mb-8">
-              {['Pattern-matched', 'Full solutions', 'Not AI-generated'].map((item) => (
+              {['Real exam questions', 'Hand-written solutions', 'Pattern-matched'].map((item) => (
                 <span key={item} className="topic-tag text-[10px]">
                   {item}
                 </span>
