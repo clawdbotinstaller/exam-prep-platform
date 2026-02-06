@@ -14,6 +14,7 @@
     --blueprint-navy: #1E3A5F;
     --highlighter-yellow: #F4D03F;
     --red-pen: #C0392B;
+    --stamp-red: #C53030;
     
     /* shadcn compatibility */
     --background: 45 28% 94%;
@@ -180,7 +181,7 @@
     position: relative;
     display: inline;
   }
-  
+
   .hand-highlight::after {
     content: '';
     position: absolute;
@@ -189,7 +190,7 @@
     right: -2px;
     height: 8px;
     background: var(--highlighter-yellow);
-    opacity: 0.5;
+    opacity: 0.4;
     z-index: -1;
     transform: skewX(-2deg) rotate(-0.5deg);
     border-radius: 1px;
@@ -277,6 +278,51 @@
     opacity: 0.03;
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  /* Red exam stamp - from Stitch */
+  .exam-stamp-red {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--stamp-red);
+    border: 2px solid var(--stamp-red);
+    padding: 4px 12px;
+    border-radius: 2px;
+    display: inline-block;
+    transform: rotate(-8deg);
+    opacity: 0.9;
+  }
+
+  /* Library checkout card - from Stitch */
+  .checkout-card {
+    background: var(--paper-aged);
+    border: 1px solid rgba(26, 26, 46, 0.1);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      0 0 0 1px rgba(26, 26, 46, 0.05);
+    padding: 4px;
+  }
+
+  .checkout-card-inner {
+    border: 2px solid var(--blueprint-navy);
+    padding: 2rem;
+    background: var(--paper-cream);
+  }
+
+  .library-stamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--blueprint-navy);
+    border: 1.5px solid var(--blueprint-navy);
+    padding: 2px 8px;
+    opacity: 0.7;
+    display: inline-block;
   }
 }
 

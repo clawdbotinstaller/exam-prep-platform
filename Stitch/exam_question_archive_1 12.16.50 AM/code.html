@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Library Card Dashboard | Calculus 2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&amp;family=JetBrains+Mono:wght@400;700&amp;family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "paper-cream": "#F9F6F0",
+                        "index-card": "#EDE8DC",
+                        "stamp-red": "#C0392B",
+                        "highlighter-yellow": "#F4D03F",
+                        "library-dark": "#2C3E50",
+                        "ruler-gray": "#95A5A6",
+                    },
+                    fontFamily: {
+                        "sans": ["IBM Plex Sans Condensed", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                        "serif": ["Source Serif 4", "serif"],
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .paper-grid {
+                background-size: 30px 30px;
+                background-image: 
+                    linear-gradient(to right, rgba(149, 165, 166, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(149, 165, 166, 0.1) 1px, transparent 1px);
+            }
+            .book-spine {
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+            }
+            .ruler-divider {
+                height: 2px;
+                background-image: repeating-linear-gradient(90deg, #95A5A6, #95A5A6 1px, transparent 1px, transparent 10px);
+                position: relative;
+            }
+            .ruler-divider::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 8px;
+                background-image: repeating-linear-gradient(90deg, #95A5A6, #95A5A6 1px, transparent 1px, transparent 50px);
+            }
+            .date-stamp {
+                font-family: 'JetBrains Mono', monospace;
+                color: #C0392B;
+                border: 2px solid #C0392B;
+                padding: 2px 8px;
+                border-radius: 2px;
+                text-transform: uppercase;
+                font-weight: bold;
+                opacity: 0.7;
+                transform: rotate(-5deg);
+                display: inline-block;
+            }
+            .library-card-border {
+                border-left: 15px solid #2C3E50;
+            }
+            .drafting-line {
+                stroke-dasharray: 4;
+            }
+        }
+    </style>
+</head>
+<body class="bg-paper-cream font-sans text-library-dark antialiased min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<aside class="w-20 md:w-24 bg-library-dark flex flex-col items-center py-4 border-r-4 border-black/20 shadow-2xl z-30">
+<div class="mb-8 text-white">
+<span class="material-symbols-outlined text-3xl">account_circle</span>
+</div>
+<nav class="flex-1 flex flex-col gap-4 w-full px-2">
+<a class="book-spine h-48 flex items-center justify-center bg-highlighter-yellow text-library-dark font-bold text-xs uppercase tracking-tighter border-y border-black/10 shadow-md" href="#">
+                STUDENT RECORD 2024
+            </a>
+<a class="book-spine h-48 flex items-center justify-center bg-gray-600 hover:bg-gray-500 text-white font-bold text-xs uppercase tracking-tighter border-y border-black/10 shadow-md transition-colors" href="#">
+                EXAM ARCHIVE
+            </a>
+<a class="book-spine h-48 flex items-center justify-center bg-[#243447] hover:bg-[#2c3e50] text-white/80 font-bold text-xs uppercase tracking-tighter border-y border-black/10 shadow-md transition-colors" href="#">
+                LOAN HISTORY
+            </a>
+<a class="book-spine h-48 flex items-center justify-center bg-[#1e2b3a] hover:bg-[#2c3e50] text-white/60 font-bold text-xs uppercase tracking-tighter border-y border-black/10 shadow-md transition-colors" href="#">
+                FACULTY NOTES
+            </a>
+</nav>
+<div class="mt-auto pb-4">
+<div class="size-10 rounded bg-gray-500/20 border border-white/10 flex items-center justify-center text-white/50">
+<span class="material-symbols-outlined text-sm">logout</span>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col relative overflow-hidden paper-grid">
+<header class="bg-white/50 backdrop-blur-sm border-b border-ruler-gray/30 px-8 py-4 flex items-center justify-between z-10">
+<div class="flex flex-col">
+<h1 class="text-2xl font-black uppercase tracking-tight text-library-dark">Student Library Dashboard</h1>
+<div class="flex items-center gap-4 mt-1">
+<span class="text-[10px] font-mono bg-library-dark text-white px-2 py-0.5 uppercase">ID: 882934-C2</span>
+<span class="text-[10px] font-mono text-ruler-gray uppercase tracking-widest">Major: Engineering Physics</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="date-stamp text-[10px]">MAY 24 2024</div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end">
+<span class="text-[10px] font-bold uppercase text-ruler-gray">Borrower</span>
+<span class="text-sm font-bold font-serif">Harrison, James P.</span>
+</div>
+<div class="size-10 rounded bg-library-dark border-2 border-ruler-gray bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBerdsO__lR2qysfyAdW_xOJRnUtELsPoow6SKcr-Q_Ny0gepTZXX14i6QJBszwtX1-cRUeS9ondAMaiIul7Kf9CaYbvOA-x0ZAyT29zcqJd64zJBkgLIKibImzJbhGXZe1cCfzg9GK-g2lvpJyxPP6M-LhE30ScheGYUao3RYODhUoxkoBi7IxXE9mA50eFyJh7r9tYU5qchfbYY6TQmcKt5YPSczDLEQ-d_PofrbVPHLD9r1xPDyinznz5SlDiPD_czjjOJUIZe0c')"></div>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-8 relative">
+<div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-8 space-y-8">
+<section class="bg-index-card library-card-border p-8 shadow-xl relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-8xl">menu_book</span>
+</div>
+<div class="flex justify-between items-start mb-8 border-b-2 border-library-dark/10 pb-4">
+<div>
+<h2 class="font-serif italic text-2xl text-library-dark">Academic Progress Record</h2>
+<p class="text-[10px] font-mono uppercase text-ruler-gray">Course: Calculus II (Math-202)</p>
+</div>
+<div class="text-right">
+<span class="text-3xl font-mono font-bold text-library-dark">84%</span>
+<p class="text-[9px] font-bold uppercase text-ruler-gray">Mastery Level</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-6">
+<div class="p-4 bg-white/40 border border-library-dark/5 rounded">
+<span class="text-[10px] font-mono text-ruler-gray block mb-1">QUESTIONS SOLVED</span>
+<span class="text-2xl font-bold font-serif">142</span>
+<div class="w-full bg-gray-200 h-1 mt-2">
+<div class="bg-library-dark h-full w-[70%]"></div>
+</div>
+</div>
+<div class="p-4 bg-white/40 border border-library-dark/5 rounded">
+<span class="text-[10px] font-mono text-ruler-gray block mb-1">CREDITS REMAINING</span>
+<span class="text-2xl font-bold font-serif">1,250</span>
+<span class="text-[10px] font-mono ml-1 text-stamp-red">Low</span>
+</div>
+<div class="p-4 bg-white/40 border border-library-dark/5 rounded">
+<span class="text-[10px] font-mono text-ruler-gray block mb-1">RANKING</span>
+<span class="text-2xl font-bold font-serif">#12</span>
+<span class="text-[10px] font-mono ml-1">of 148</span>
+</div>
+</div>
+<div class="mt-10">
+<div class="flex justify-between items-end mb-4">
+<label class="text-[10px] font-bold uppercase text-library-dark tracking-widest">Mastery Trajectory (Drafting View)</label>
+<span class="text-[9px] font-mono text-ruler-gray italic">Scale: 1:100 Question Units</span>
+</div>
+<div class="h-48 relative border-l border-b border-ruler-gray/50">
+<div class="absolute inset-0 flex flex-col justify-between opacity-10">
+<div class="border-t border-library-dark w-full"></div>
+<div class="border-t border-library-dark w-full"></div>
+<div class="border-t border-library-dark w-full"></div>
+<div class="border-t border-library-dark w-full"></div>
+</div>
+<svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+<polyline fill="none" points="0,180 100,160 200,165 300,120 400,90 500,100 600,40" stroke="#2C3E50" stroke-width="2"></polyline>
+<circle cx="600" cy="40" fill="#C0392B" r="4"></circle>
+</svg>
+<div class="absolute bottom-2 right-2 date-stamp text-[8px]">Projected Goal: JUNE 15</div>
+</div>
+</div>
+</section>
+<div class="ruler-divider w-full"></div>
+<section class="space-y-4">
+<h3 class="font-bold uppercase text-xs tracking-[0.2em] text-ruler-gray px-1">Recently Withdrawn From Archive</h3>
+<div class="bg-white p-4 shadow-sm border border-black/5 flex items-center gap-6 relative group hover:-translate-y-1 transition-transform">
+<div class="w-1 bg-highlighter-yellow h-10"></div>
+<div class="flex-1">
+<div class="flex items-center gap-3">
+<span class="font-mono text-[10px] text-ruler-gray">REF: Q-8821</span>
+<h4 class="font-serif font-semibold text-library-dark">Trigonometric Substitution - Hard</h4>
+</div>
+<p class="text-[10px] font-mono text-ruler-gray">Session Duration: 18m 42s</p>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-[10px] font-bold text-green-700 font-mono uppercase">PASSED [A+]</span>
+<div class="text-[9px] font-mono text-ruler-gray/60 border border-ruler-gray/30 px-2">2024-05-20</div>
+</div>
+</div>
+<div class="bg-white p-4 shadow-sm border border-black/5 flex items-center gap-6 relative group hover:-translate-y-1 transition-transform">
+<div class="w-1 bg-stamp-red h-10"></div>
+<div class="flex-1">
+<div class="flex items-center gap-3">
+<span class="font-mono text-[10px] text-ruler-gray">REF: Q-4590</span>
+<h4 class="font-serif font-semibold text-library-dark">Infinite Series Convergence</h4>
+</div>
+<p class="text-[10px] font-mono text-ruler-gray">Session Duration: 05m 12s</p>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-[10px] font-bold text-stamp-red font-mono uppercase">INCOMPLETE</span>
+<div class="text-[9px] font-mono text-ruler-gray/60 border border-ruler-gray/30 px-2">2024-05-18</div>
+</div>
+</div>
+<div class="bg-white p-4 shadow-sm border border-black/5 flex items-center gap-6 relative group hover:-translate-y-1 transition-transform">
+<div class="w-1 bg-library-dark h-10"></div>
+<div class="flex-1">
+<div class="flex items-center gap-3">
+<span class="font-mono text-[10px] text-ruler-gray">REF: Q-1102</span>
+<h4 class="font-serif font-semibold text-library-dark">Integration by Parts - Level II</h4>
+</div>
+<p class="text-[10px] font-mono text-ruler-gray">Session Duration: 24m 10s</p>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-[10px] font-bold text-library-dark font-mono uppercase">RETURNED [B]</span>
+<div class="text-[9px] font-mono text-ruler-gray/60 border border-ruler-gray/30 px-2">2024-05-15</div>
+</div>
+</div>
+</section>
+</div>
+<div class="lg:col-span-4 space-y-8">
+<div class="bg-index-card p-6 border-b-4 border-r-4 border-black/5 shadow-lg">
+<div class="flex items-center gap-2 mb-6 border-b border-library-dark/20 pb-2">
+<span class="material-symbols-outlined text-sm">history_edu</span>
+<h3 class="font-bold uppercase text-[10px] tracking-widest">Return Schedule</h3>
+</div>
+<div class="space-y-6">
+<div class="relative">
+<div class="flex flex-col">
+<span class="font-serif italic text-sm">Review Session: Power Series</span>
+<span class="font-mono text-[10px] text-ruler-gray">Due: Tomorrow, 09:00</span>
+</div>
+<div class="absolute -right-2 top-0 date-stamp text-[7px] -rotate-12">OVERDUE</div>
+</div>
+<div class="flex flex-col">
+<span class="font-serif italic text-sm">Volume III: Differential Eq.</span>
+<span class="font-mono text-[10px] text-ruler-gray">Due: May 28, 2024</span>
+</div>
+<div class="flex flex-col">
+<span class="font-serif italic text-sm">Archive Set: Taylor Polynomials</span>
+<span class="font-mono text-[10px] text-ruler-gray">Due: June 02, 2024</span>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-dashed border-ruler-gray">
+<div class="flex items-center justify-between mb-4">
+<span class="text-[10px] font-bold uppercase">Library Fines</span>
+<span class="font-mono text-xs text-stamp-red">-$0.00</span>
+</div>
+<button class="w-full py-3 bg-library-dark text-white text-[10px] font-bold uppercase tracking-widest hover:bg-opacity-90 transition-all">
+                                Extended Access (100cr)
+                            </button>
+</div>
+</div>
+<div class="p-6 border-2 border-ruler-gray/20 rounded-sm">
+<label class="text-[9px] font-bold uppercase text-ruler-gray block mb-4">System Information</label>
+<div class="space-y-3 font-mono text-[10px]">
+<div class="flex justify-between"><span>Status:</span> <span class="text-green-600 font-bold">ACTIVE</span></div>
+<div class="flex justify-between"><span>Last Login:</span> <span>2024-05-24 08:21</span></div>
+<div class="flex justify-between"><span>Terminal:</span> <span>NODE_ENG_04</span></div>
+<div class="flex justify-between"><span>Auth Type:</span> <span>BIO_METRIC_S2</span></div>
+</div>
+</div>
+</div>
+</div>
+<footer class="mt-16 pb-20 border-t-2 border-ruler-gray/20 pt-12">
+<div class="flex flex-col md:flex-row justify-between items-end gap-6">
+<div class="flex flex-col gap-2">
+<span class="text-[10px] font-mono font-bold text-library-dark uppercase tracking-[0.2em]">Engineering Faculty Library Management System</span>
+<div class="flex gap-4">
+<div class="text-[9px] font-mono text-ruler-gray border border-ruler-gray/40 p-2 rounded bg-white/30">
+                                USER_PROFILE: HARRISON_J_24<br/>
+                                SECURITY_CLEARANCE: LEVEL_2<br/>
+                                STAMP_TIME: 14:32:01 UTC
+                            </div>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="bg-library-dark text-white px-8 py-3 text-xs font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">print</span> Print Full Transcript
+                        </button>
+</div>
+</div>
+</footer>
+</div>
+<div class="absolute bottom-8 right-8 flex flex-col gap-3">
+<button class="size-14 bg-white border-2 border-library-dark text-library-dark rounded-full shadow-lg flex items-center justify-center hover:bg-highlighter-yellow transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="size-14 bg-library-dark text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-all">
+<span class="material-symbols-outlined">edit_note</span>
+</button>
+</div>
+</main>
+</div>
+
+</body></html>

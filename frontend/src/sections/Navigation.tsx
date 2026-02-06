@@ -34,7 +34,7 @@ export default function Navigation() {
         <div className="flex items-center gap-3">
           <BookOpen className="w-5 h-5 text-blueprint-navy" strokeWidth={1.5} />
           <span className="font-serif font-semibold text-ink-black text-lg tracking-tight">
-            Calc2Archive
+            Testament
           </span>
           <span className="hidden sm:inline date-stamp ml-2">v1.0</span>
         </div>
@@ -63,7 +63,7 @@ export default function Navigation() {
             onClick={() => scrollTo('contact')}
             className="btn-blueprint"
           >
-            Request Access
+            Get Access
           </button>
         </div>
 

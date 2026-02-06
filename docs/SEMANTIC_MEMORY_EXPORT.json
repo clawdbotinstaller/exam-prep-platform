@@ -1,0 +1,358 @@
+{
+  "export_timestamp": "2026-02-06",
+  "source": "claude-code-semantic-memory + current session",
+  "system_info": {
+    "daemon_location": "/Users/muadhsambul/claude-code-semantic-memory",
+    "database": "daemon/semantic-memory.db",
+    "model": "nomic-embed-text",
+    "embedding_dimensions": 768,
+    "min_similarity": 0.45,
+    "max_results": 3
+  },
+  "learnings": [
+    {
+      "type": "CRITICAL_ARCHITECTURE",
+      "content": "Exam Prep Platform: Calculus 2 study tool with 10 free credits (changed from 5 based on research), analysis costs 2 credits, questions cost 1 credit. Pricing: $4.99/5 credits, $9.99/15 credits, $19.99/unlimited. Tech: React + Vite + Cloudflare Workers + D1 + Stripe. Real exam questions from actual midterms (2022-2024), NOT AI-generated.",
+      "context": "exam-prep-platform project",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "DESIGN_DECISION",
+      "content": "Design System V2: 'The Engineering Library' aesthetic - graph paper backgrounds, cream paper (#F5F1E8), blueprint navy (#1E3A5F), technical drawing style. Typography: Source Serif 4 (headlines), Inter (body), JetBrains Mono (data). Visual elements: index cards, library date stamps, ruler dividers, highlighter accents. NOT glassmorphism or generic SaaS templates.",
+      "context": "exam-prep-platform design",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "CONTENT_STRATEGY",
+      "content": "Content voice for landing page: Direct, no fluff, specific not vague. Avoid AI-speak like 'Ace your exam with AI-powered platform' or 'Optimize your learning journey'. Use human language: 'Questions from actual midterms. Not AI-generated practice.' 'I recognized three problems on my exam from this archive.' Built by former Calc 2 TA.",
+      "context": "exam-prep-platform copywriting",
+      "confidence": 0.92,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "MONETIZATION_RESEARCH",
+      "content": "Credit-based monetization research: 5 free credits insufficient, changed to 10 credits. Recommended pricing: Starter $4.99/5 credits, Value $9.99/15 credits (33% discount), Power $14.99/30 credits, Semester $39.99/100 credits. Unlimited options: Weekly $7.99, Monthly $19.99, Semester $49.99, Annual $99.99. EdTech conversion rates: 5-8% freemium, 24.8% free trial (highest in SaaS).",
+      "context": "exam-prep-platform monetization",
+      "confidence": 0.90,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "CALCULUS2_CURRICULUM",
+      "content": "Calculus 2 curriculum breakdown: Integration Techniques (25-30%), Applications (20-25%), Sequences & Series (30-35% - highest weight), Parametric & Polar (15-20%), Differential Equations (5-10%). Students struggle most with: Series Convergence Strategy (5/5 difficulty), Power Series (4/5), Taylor Series (4/5), Volumes of Revolution (4/5). Pass rates: 46-63% without tutoring, 60-80% with support.",
+      "context": "exam-prep-platform content",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "COMPETITOR_ANALYSIS",
+      "content": "Exam prep competitors: StudySmarter (AI flashcards, gamified), Quizlet (memorization focus, lacks depth), Chegg (expensive, solutions-focused not exam-focused), Pauls Online Math Notes (free but generic), Khan Academy (not exam-specific), Wolfram Alpha (solver not study tool). Gap: No platform focuses on actual past exam questions with professor-specific analysis.",
+      "context": "exam-prep-platform market research",
+      "confidence": 0.90,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "WORKFLOW_PATTERN",
+      "content": "Ralph Loop cancellation: Delete state file at .claude/ralph-loop.local.md to stop loop without deleting plugin. Check if file exists, read iteration number, remove file, report cancellation status.",
+      "context": "claude plugins",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "WORKFLOW_PATTERN",
+      "content": "Semantic Memory CPU limits: Ollama limited to 0.1 CPUs via Docker, daemon uses cpulimit -l 10 or nice -n 19 to prevent system slowdown. Container resource limits configured in docker-compose.yml.",
+      "context": "system configuration",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "WORKFLOW_PATTERN",
+      "content": "Plan cancellation: Rename plan file from plan-name.md to plan-name.CANCELLED.md to stop stop-hook prompts. Prevents further automated prompts about the plan.",
+      "context": "plan management",
+      "confidence": 0.90,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "CRITICAL_ARCHITECTURE",
+      "content": "Ultimate Coding Workflow: swarm-planner (dependency-aware plans) -> parallel-task (parallel execution) OR subagent-driven-development (two-stage review). Always use git-worktrees for isolation. Never skip planning phase.",
+      "context": "workflow architecture",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "WORKING_SOLUTION",
+      "content": "To invoke PowerShell remotely over Tailscale VPN, use: $cred = Import-Clixml -Path '$env:USERPROFILE\\.credentials\\remote.xml'; Invoke-Command -ComputerName 100.95.72.101 -Credential $cred -ScriptBlock { <commands> }",
+      "context": "PowerShell remoting over Tailscale",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "GOTCHA",
+      "content": "Running inline PowerShell from Git Bash with $ variables causes credential GUI popups because Bash strips the $ before PowerShell sees it. Always use -NonInteractive flag or write commands to a .ps1 file first.",
+      "context": "Git Bash and PowerShell integration",
+      "confidence": 0.92,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "PATTERN",
+      "content": "Hook scripts should check HOSTNAME environment variable to determine which machine they're running on, then set the daemon URL accordingly: laptop uses remote IP (100.95.72.101), desktop uses localhost (127.0.0.1).",
+      "context": "Multi-machine hook architecture",
+      "confidence": 0.90,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "DECISION",
+      "content": "Using nomic-embed-text-v1.5 instead of all-MiniLM-L6-v2 for embeddings. Nomic has 8192 token context (vs 256), so full conversation turns are captured instead of being truncated at ~25%.",
+      "context": "Embedding model selection",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "FAILURE",
+      "content": "SSH-based PowerShell remoting (Enter-PSSession over SSH) doesn't work for automated scripts because it requires TTY allocation which breaks non-interactive execution. Use WinRM over Tailscale instead.",
+      "context": "Remote command execution approaches",
+      "confidence": 0.88,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "PREFERENCE",
+      "content": "User wants Claude to query semantic memory BEFORE asking clarifying questions, to avoid redundant conversations about topics already discussed in past sessions.",
+      "context": "Interaction style preference",
+      "confidence": 0.90,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "TECH_STACK_CHANGE",
+      "content": "Changed database from Turso to Cloudflare D1 for exam-prep-platform. D1 is native to Workers (no client needed), free tier: 5GB storage, 100k queries/day. Updated all documentation: CLAUDE.md, BACKEND_STRUCTURE.md, TECH_STACK.md, PRD.md, APP_FLOW.md, CHAT_CONTEXT.md, IMPLEMENTATION_PLAN.md.",
+      "context": "exam-prep-platform backend",
+      "confidence": 0.95,
+      "timestamp": "2026-02-05"
+    },
+    {
+      "type": "PROJECT_RENAME",
+      "content": "Project renamed from 'ExamArchive' to 'Testament'. Name chosen for scalability across courses and majors, catchy and memorable while conveying the idea of preserved exam knowledge. Repository at https://github.com/clawdbotinstaller/exam-prep-platform.",
+      "context": "exam-prep-platform branding",
+      "confidence": 0.95,
+      "timestamp": "2026-02-06"
+    },
+    {
+      "type": "REPOSITORY_ORGANIZATION",
+      "content": "GitHub repository cleaned up: removed UI-choose design folder (local reference only), removed semantic-memory.db (local database), removed .DS_Store files, updated .gitignore to prevent future clutter. Clean structure: frontend/, worker/, docs/, research/ folders only.",
+      "context": "exam-prep-platform repository",
+      "confidence": 0.95,
+      "timestamp": "2026-02-06"
+    },
+    {
+      "type": "WORKER_IMPLEMENTATION",
+      "content": "Cloudflare Worker initialized with Hono framework. Database schema includes: users, sessions, courses, topics, questions, credit_transactions tables. D1 binding configured in wrangler.toml. Database initialization via POST /init endpoint.",
+      "context": "exam-prep-platform backend",
+      "confidence": 0.95,
+      "timestamp": "2026-02-06"
+    },
+    {
+      "type": "DESIGN_ADAPTATION",
+      "content": "Frontend adapted by combining Kimi React base with Stitch HTML elements. Added: exam-stamp class (red ink stamp on hero), library checkout card styling for pricing section, technical footer with drawing numbers, library date stamps. Reduced highlighter opacity from 0.5 to 0.4. Removed bright yellow accents per user preference.",
+      "context": "exam-prep-platform frontend",
+      "confidence": 0.92,
+      "timestamp": "2026-02-06"
+    },
+    {
+      "type": "FIX_APPLIED",
+      "content": "TypeScript build fixed by adding paths configuration to tsconfig.app.json: '@/*': ['./src/*']. This resolved module resolution errors for @/ imports. Also fixed missing images in dist by copying hero-exam.jpg and math-notes.jpg manually.",
+      "context": "exam-prep-platform build issues",
+      "confidence": 0.95,
+      "timestamp": "2026-02-06"
+    },
+    {
+      "type": "CI_CD_SETUP",
+      "content": "GitHub Actions workflows configured: deploy-frontend.yml builds and deploys to Cloudflare Pages on frontend/** changes; deploy-worker.yml deploys to Cloudflare Workers on worker/** changes. Both use CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets.",
+      "context": "exam-prep-platform deployment",
+      "confidence": 0.95,
+      "timestamp": "2026-02-06"
+    },
+    {
+      "type": "DEVELOPMENT_ENVIRONMENT",
+      "content": "Local development setup: Frontend runs on localhost:5174 (Vite dev server, port 5173 was in use), Worker runs on localhost:8787 (wrangler dev). Both can run simultaneously for full-stack local development.",
+      "context": "exam-prep-platform local dev",
+      "confidence": 0.95,
+      "timestamp": "2026-02-06"
+    },
+    {
+      "type": "DESIGN_CONSTRAINT",
+      "content": "User feedback on design: Do not use sideways text in navbar (hard to read), avoid bright yellow colors, use color scheme from provided image (muted navy blues, cream/beige backgrounds, red accent stamps).",
+      "context": "exam-prep-platform design preferences",
+      "confidence": 0.95,
+      "timestamp": "2026-02-06"
+    },
+    {
+      "type": "DESIGN_COMBINATION",
+      "content": "Kimi + Stitch approach: Use Kimi as base (GSAP scroll animations, horizontal navigation, pinned sections, graph paper aesthetic). Add Stitch elements selectively (exam stamp, checkout card, technical footer). Avoid: sideways navigation text (hard to read), bright yellow (reduce to 40% opacity).",
+      "context": "exam-prep-platform frontend design",
+      "confidence": 0.95,
+      "timestamp": "2026-02-06"
+    }
+  ],
+  "current_project": {
+    "name": "Testament",
+    "former_names": ["ExamArchive", "CalcPrep", "Exam Prep Platform"],
+    "phase": "Worker Initialized, Frontend Landing Page Complete",
+    "description": "Real exam questions from real university exams - organized by topic with step-by-step solutions",
+    "repository": "https://github.com/clawdbotinstaller/exam-prep-platform",
+    "stack": {
+      "frontend": {
+        "framework": "React 19",
+        "build_tool": "Vite 7",
+        "language": "TypeScript",
+        "styling": "Tailwind CSS 4",
+        "animation": "GSAP ScrollTrigger",
+        "icons": "Lucide React",
+        "components": "shadcn/ui"
+      },
+      "backend": {
+        "runtime": "Cloudflare Workers",
+        "framework": "Hono",
+        "database": "Cloudflare D1 (SQLite)",
+        "payments": "Stripe",
+        "language": "TypeScript"
+      },
+      "deployment": {
+        "frontend": "Cloudflare Pages",
+        "backend": "Cloudflare Workers",
+        "ci_cd": "GitHub Actions"
+      }
+    },
+    "key_features": [
+      "Real exam questions from actual midterms (2022-2024)",
+      "Credit-based access (10 free, then purchase)",
+      "Topic frequency analysis",
+      "Full solutions with step-by-step work",
+      "Professor-specific exam patterns"
+    ],
+    "pricing": {
+      "free_credits": 10,
+      "analysis_cost": 2,
+      "question_cost": 1,
+      "tiers": [
+        {"name": "Starter", "price": "$4.99", "credits": 5},
+        {"name": "Value", "price": "$9.99", "credits": 15},
+        {"name": "Power", "price": "$14.99", "credits": 30},
+        {"name": "Semester Pack", "price": "$39.99", "credits": 100},
+        {"name": "Weekly Unlimited", "price": "$7.99", "period": "7 days"},
+        {"name": "Monthly Unlimited", "price": "$19.99", "period": "30 days"},
+        {"name": "Semester Unlimited", "price": "$49.99", "period": "4 months"},
+        {"name": "Annual Unlimited", "price": "$99.99", "period": "12 months"}
+      ]
+    },
+    "target_users": "Engineering and science students taking Calculus 2",
+    "differentiator": "Authentic exam questions (not AI-generated), analyzed by frequency and topic"
+  },
+  "design_system": {
+    "name": "Engineering Library",
+    "aesthetic": "Technical drawing meets university engineering library",
+    "colors": {
+      "paper_primary": "#F5F1E8",
+      "paper_secondary": "#EDE8DC",
+      "paper_dark": "#2C3E50",
+      "paper_grid": "#D4CFC4",
+      "ink_primary": "#1A1A2E",
+      "ink_secondary": "#4A4A5A",
+      "ink_light": "#8A8A9A",
+      "ink_red": "#C0392B",
+      "ink_blue": "#2E5090",
+      "highlight": "#F4D03F",
+      "pencil": "#3D3D3D",
+      "stamp_blue": "#1E3A5F",
+      "stamp_red": "#C53030"
+    },
+    "typography": {
+      "headings": "Source Serif 4",
+      "body": "Inter",
+      "mono": "JetBrains Mono",
+      "labels": "IBM Plex Sans Condensed",
+      "handwritten": "Reenie Beanie"
+    },
+    "visual_elements": [
+      "Graph paper grid backgrounds",
+      "Index card style containers",
+      "Library date stamps",
+      "Technical ruler dividers",
+      "Book spine navigation",
+      "Highlighter accents (40% opacity)",
+      "Red ink stamps (exam stamps, library stamps)",
+      "Checkout card styling for pricing"
+    ]
+  },
+  "architecture": {
+    "database_schema": {
+      "users": "id, email, password_hash, credits, has_unlimited, unlimited_until",
+      "sessions": "id, user_id, expires_at - JWT session management",
+      "courses": "id, name, description, exam_count - calc2, calc3, etc.",
+      "topics": "id, course_id, name, slug, category, frequency_score",
+      "questions": "id, topic_id, question_text, solution_steps, source attribution",
+      "credit_transactions": "payment history and credit purchases"
+    },
+    "credit_system": {
+      "initial_credits": 10,
+      "unlimited_option": "$12 one-time purchase",
+      "credit_cost_per_question": 1
+    }
+  },
+  "documentation_status": {
+    "completed": [
+      "PRD.md - Product Requirements",
+      "APP_FLOW.md - User flows and navigation",
+      "TECH_STACK.md - Technology stack decisions",
+      "FRONTEND_GUIDELINES.md - Design system",
+      "BACKEND_DESIGN.md - API and data model design",
+      "BACKEND_STRUCTURE.md - Worker and database structure",
+      "IMPLEMENTATION_PLAN.md - Implementation roadmap",
+      "DESIGN_V2_ENGINEERING_LIBRARY.md - Landing page generation prompt",
+      "research/competitor-analysis.md",
+      "research/monetization-psychology.md",
+      "research/calculus2-curriculum.md",
+      "README.md - Project overview",
+      "docs/README.md - Documentation index"
+    ],
+    "next_steps": [
+      "Process exam PDFs into database",
+      "Build authentication system",
+      "Build credit system with Stripe",
+      "Create question browser interface",
+      "Build admin panel for question management"
+    ]
+  },
+  "session_context": {
+    "completed_today": [
+      "Renamed project from ExamArchive to Testament",
+      "Organized GitHub repository - removed clutter",
+      "Initialized Cloudflare Worker with D1 database",
+      "Set up CI/CD workflows for frontend and worker",
+      "Adapted frontend with Stitch design elements (stamps, checkout cards)",
+      "Fixed TypeScript path alias build issue",
+      "Updated SEMANTIC_MEMORY_EXPORT.json"
+    ],
+    "current_focus": "Frontend preview ready, worker initialized, ready for feature implementation",
+    "blockers": "None",
+    "dev_servers": {
+      "frontend": "http://localhost:5174",
+      "worker": "http://localhost:8787"
+    }
+  },
+  "implementation_notes": {
+    "worker_setup": {
+      "local_dev": "npx wrangler dev (runs on localhost:8787)",
+      "database_init": "POST /init creates all tables",
+      "d1_binding": "DB binding in wrangler.toml"
+    },
+    "frontend_setup": {
+      "local_dev": "npm run dev (runs on localhost:5173/5174)",
+      "build": "npm run build (outputs to dist/)"
+    },
+    "ci_cd": {
+      "worker_deploy": "Triggers on pushes to worker/**",
+      "frontend_deploy": "Triggers on pushes to frontend/**",
+      "secrets_required": ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"]
+    }
+  }
+}
