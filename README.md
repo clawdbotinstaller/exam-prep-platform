@@ -1,10 +1,10 @@
-# ExamArchive
+# Testament
 
 Real exam questions from real university exams.
 
 ## Overview
 
-ExamArchive helps students study by providing access to actual midterm and final exam questions from previous years, organized by topic with step-by-step solutions.
+Testament helps students study by providing access to actual midterm and final exam questions from previous years, organized by topic with step-by-step solutions.
 
 ## Tech Stack
 

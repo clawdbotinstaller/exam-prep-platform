@@ -1,0 +1,14 @@
+name = "testament-api"
+main = "src/index.ts"
+compatibility_date = "2025-02-05"
+
+[vars]
+ENVIRONMENT = "development"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "testament-db"
+database_id = ""
+
+[build]
+command = ""
