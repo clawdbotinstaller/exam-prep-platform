@@ -1,88 +1,123 @@
-import { useRef, useLayoutEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import './App.css';
 
-// Import sections
-import Navigation from './sections/Navigation';
-import HeroSection from './sections/HeroSection';
-import ArchiveBrowse from './sections/ArchiveBrowse';
-import TopicBreakdown from './sections/TopicBreakdown';
-import QuestionSpotlight from './sections/QuestionSpotlight';
-import TopicDeepDive from './sections/TopicDeepDive';
-import StudyFlow from './sections/StudyFlow';
-import ContactSection from './sections/ContactSection';
+import LandingPage from './pages/LandingPage';
+import SignupPage from './pages/SignupPage';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import CourseLayout from './layouts/CourseLayout';
+import CourseHome from './pages/course/CourseHome';
+import CourseAnalysis from './pages/course/CourseAnalysis';
+import TopicAnalysisDetail from './pages/course/TopicAnalysisDetail';
+import CoursePractice from './pages/course/CoursePractice';
+import CourseArchive from './pages/course/CourseArchive';
+import CourseMidterm from './pages/course/CourseMidterm';
+import QuestionPage from './pages/course/QuestionPage';
+import UpgradePage from './pages/UpgradePage';
+import SuccessPage from './pages/SuccessPage';
+import ProfilePage from './pages/ProfilePage';
 
-gsap.registerPlugin(ScrollTrigger);
+function useAuth() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-function App() {
-  const mainRef = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    // Wait for all sections to mount and create their ScrollTriggers
-    const timer = setTimeout(() => {
-      const pinned = ScrollTrigger.getAll()
-        .filter(st => st.vars.pin)
-        .sort((a, b) => a.start - b.start);
-      
-      const maxScroll = ScrollTrigger.maxScroll(window);
-      
-      if (!maxScroll || pinned.length === 0) return;
-
-      const pinnedRanges = pinned.map(st => ({
-        start: st.start / maxScroll,
-        end: (st.end ?? st.start) / maxScroll,
-        center: (st.start + ((st.end ?? st.start) - st.start) * 0.5) / maxScroll,
-      }));
-
-      ScrollTrigger.create({
-        snap: {
-          snapTo: (value: number) => {
-            const inPinned = pinnedRanges.some(
-              r => value >= r.start - 0.02 && value <= r.end + 0.02
-            );
-            if (!inPinned) return value;
-
-            const target = pinnedRanges.reduce(
-              (closest, r) =>
-                Math.abs(r.center - value) < Math.abs(closest - value)
-                  ? r.center
-                  : closest,
-              pinnedRanges[0]?.center ?? 0
-            );
-            return target;
-          },
-          duration: { min: 0.15, max: 0.35 },
-          delay: 0,
-          ease: 'power2.out',
-        },
-      });
-    }, 500);
-
-    return () => {
-      clearTimeout(timer);
-    };
+  useEffect(() => {
+    const token = localStorage.getItem('session');
+    setIsAuthenticated(!!token);
+    setIsLoading(false);
   }, []);
 
+  return { isAuthenticated, isLoading };
+}
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isDemo = searchParams.get('demo') === 'true';
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-paper-cream flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && !isDemo) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function App() {
   return (
-    <div ref={mainRef} className="relative">
-      {/* Paper texture overlay */}
-      <div className="paper-texture" />
-      
-      {/* Navigation */}
-      <Navigation />
-      
-      {/* Main content */}
-      <main className="relative">
-        <HeroSection className="z-10" />
-        <ArchiveBrowse className="z-20" />
-        <TopicBreakdown className="z-30" />
-        <QuestionSpotlight className="z-40" />
-        <TopicDeepDive className="z-50" />
-        <StudyFlow className="z-60" />
-        <ContactSection className="z-70" />
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Protected routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/upgrade"
+          element={
+            <ProtectedRoute>
+              <UpgradePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/success"
+          element={
+            <ProtectedRoute>
+              <SuccessPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/course/:slug"
+          element={
+            <ProtectedRoute>
+              <CourseLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<CourseHome />} />
+          <Route path="analysis" element={<CourseAnalysis />} />
+          <Route path="analysis/:topicId" element={<TopicAnalysisDetail />} />
+          <Route path="practice" element={<CoursePractice />} />
+          <Route path="archive" element={<CourseArchive />} />
+          <Route path="archive/midterm/:difficulty" element={<CourseMidterm />} />
+          <Route path="question/:id" element={<QuestionPage />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
