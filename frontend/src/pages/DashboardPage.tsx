@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { BarChart3, ChevronRight, GraduationCap, Zap } from 'lucide-react';
-import { apiGet, API_URL } from '../lib/api';
+import { apiGet } from '../lib/api';
+import Navbar from '../components/Navbar';
 
 interface User {
   name: string;
@@ -23,7 +24,6 @@ interface Course {
 }
 
 export default function DashboardPage() {
-  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
 
@@ -47,50 +47,13 @@ export default function DashboardPage() {
     load();
   }, []);
 
-  const handleLogout = () => {
-    fetch(`${API_URL}/api/auth/logout`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('session')}` },
-    }).catch(() => undefined);
-    localStorage.removeItem('session');
-    navigate('/');
-  };
-
   return (
     <div className="min-h-screen bg-paper-cream">
-      <header className="bg-paper-cream border-b border-pencil-gray/10 sticky top-0 z-50">
-        <div className="px-8 lg:px-[8vw] py-4 flex items-center justify-between">
-          <Link to="/dashboard" className="font-serif font-semibold text-ink-black text-xl">
-            Testament
-          </Link>
-
-          <div className="flex items-center gap-6">
-            <Link
-              to="/upgrade"
-              className="flex items-center gap-2 px-4 py-2 bg-blueprint-navy/10 hover:bg-blueprint-navy/20 transition-colors"
-            >
-              <Zap className="w-4 h-4 text-blueprint-navy" />
-              <span className="font-mono font-medium text-blueprint-navy">
-                {user?.plan === 'unlimited' ? 'Unlimited' : `${user?.credits ?? 0} credits`}
-              </span>
-            </Link>
-
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blueprint-navy flex items-center justify-center">
-                <span className="font-serif text-paper-cream text-sm">
-                  {user?.name?.charAt(0) || 'U'}
-                </span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="font-sans text-pencil-gray text-sm hover:text-ink-black"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar
+        credits={user?.credits ?? 0}
+        plan={user?.plan}
+        userName={user?.name}
+      />
 
       <main className="px-8 lg:px-[8vw] py-12">
         <div className="mb-12">

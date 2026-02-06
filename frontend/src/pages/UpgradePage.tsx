@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Check, Zap, Crown } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 interface PricingTier {
   id: string;
@@ -52,11 +53,7 @@ export default function UpgradePage() {
 
   return (
     <div className="min-h-screen bg-paper-cream">
-      <header className="bg-paper-cream border-b border-pencil-gray/10 px-8 lg:px-[8vw] py-4">
-        <Link to="/dashboard" className="font-serif font-semibold text-ink-black text-xl">
-          Testament
-        </Link>
-      </header>
+      <Navbar credits={0} plan="free" userName="" />
 
       <main className="px-8 lg:px-[8vw] py-12 max-w-5xl mx-auto">
         <div className="text-center mb-12">
