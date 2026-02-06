@@ -41,6 +41,12 @@ coverage/
 # Worktrees (when we create them)
 .worktrees/
 
+# Local database
+semantic-memory.db
+
+# Design reference (local only)
+UI-choose design/
+
 # Exams (keep private until ready)
 exams/*.pdf
 !exams/.gitkeep
