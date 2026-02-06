@@ -1,7 +1,8 @@
 import { useRef, useLayoutEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Send, CheckCircle, UserPlus, Mail } from 'lucide-react';
+import { Send, CheckCircle, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,7 +18,6 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    school: '',
     message: '',
   });
 
@@ -33,13 +33,12 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
         {
           y: 0,
           opacity: 1,
-          duration: 0.6,
+          duration: 0.7,
           ease: 'power2.out',
           scrollTrigger: {
             trigger: headlineRef.current,
-            start: 'top 80%',
-            end: 'top 55%',
-            scrub: true,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
           },
         }
       );
@@ -47,17 +46,17 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
       // Form animation
       gsap.fromTo(
         formRef.current,
-        { x: '8vw', opacity: 0 },
+        { y: 30, opacity: 0 },
         {
-          x: 0,
+          y: 0,
           opacity: 1,
-          duration: 0.6,
+          duration: 0.7,
+          delay: 0.15,
           ease: 'power2.out',
           scrollTrigger: {
             trigger: formRef.current,
-            start: 'top 80%',
-            end: 'top 55%',
-            scrub: true,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
           },
         }
       );
@@ -96,54 +95,52 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
 
       <div className="px-8 lg:px-[8vw] relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-16">
-          {/* Left side - Sign up promo */}
+          {/* Left side - Value prop */}
           <div ref={headlineRef} className="lg:max-w-md">
             <div className="inline-flex items-center gap-2 mb-6">
               <span className="date-stamp !text-paper-cream !border-paper-cream/50">
                 <UserPlus className="w-3 h-3 inline mr-1" strokeWidth={2} />
-                Free Account
+                Free to Start
               </span>
             </div>
 
             <h2 className="font-serif font-semibold text-paper-cream text-3xl lg:text-4xl xl:text-5xl leading-tight mb-4">
-              Get Full Access to the Archive
+              Study Patterns, Not Just Problems
             </h2>
             <p className="font-sans text-paper-cream/70 text-base lg:text-lg leading-relaxed mb-8">
-              Sign up to unlock step-by-step solutions, track your progress, and save problems for later review.
+              Create a free account to see step-by-step solutions and track your progress
+              across the patterns that actually show up on exams.
             </p>
 
             {/* Benefits list */}
-            <div className="space-y-3 mb-8">
+            <div className="space-y-4 mb-8">
               {[
-                '340+ problems with full solutions',
-                'Progress tracking across topics',
-                'Save favorites for exam prep',
-                'New exams added each semester',
+                { title: 'Pattern-based learning', desc: 'Same structure, different numbers' },
+                { title: 'Full solutions', desc: 'Step-by-step for every question' },
+                { title: 'Track progress', desc: 'See which patterns you have down' },
               ].map((benefit) => (
-                <div key={benefit} className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-highlighter-yellow flex-shrink-0" strokeWidth={2} />
-                  <span className="font-sans text-paper-cream/80 text-sm">{benefit}</span>
+                <div key={benefit.title} className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-highlighter-yellow flex-shrink-0 mt-0.5" strokeWidth={2} />
+                  <div>
+                    <span className="font-sans text-paper-cream font-medium text-sm block">{benefit.title}</span>
+                    <span className="font-sans text-paper-cream/60 text-sm">{benefit.desc}</span>
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Secondary sign-up button */}
-            <button
-              onClick={() => {
-                const el = document.getElementById('signup-form');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-2 text-highlighter-yellow font-condensed text-xs uppercase tracking-widest hover:underline"
+            <Link
+              to="/signup"
+              className="inline-flex items-center justify-center gap-2 bg-paper-cream text-blueprint-navy font-condensed text-xs uppercase tracking-widest px-6 py-3 border border-paper-cream/80 hover:bg-paper-cream/90 transition-colors"
             >
-              <Mail className="w-4 h-4" strokeWidth={1.5} />
-              Or contact us with questions
-            </button>
+              <UserPlus className="w-4 h-4" strokeWidth={1.5} />
+              Create Free Account
+            </Link>
           </div>
 
           {/* Right side - Contact form */}
           <div
             ref={formRef}
-            id="signup-form"
             className="lg:w-[50vw] lg:max-w-xl checkout-card"
           >
             {submitted ? (
@@ -165,7 +162,7 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                       Contact Us
                     </h2>
                     <p className="font-mono text-[10px] uppercase text-pencil-gray">
-                      Form: GENERAL INQUIRY
+                      Questions? We're here.
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-blueprint-navy/10 flex items-center justify-center">
@@ -208,20 +205,6 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
 
                   <div>
                     <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
-                      School (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      name="school"
-                      value={formData.school}
-                      onChange={handleChange}
-                      className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
-                      placeholder="University name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
                       Message
                     </label>
                     <textarea
@@ -231,7 +214,7 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                       required
                       rows={4}
                       className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors resize-none"
-                      placeholder="How can we help? Questions, feedback, or partnership inquiries..."
+                      placeholder="Questions, feedback, or just saying hi..."
                     />
                   </div>
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { BookOpen, Menu, X } from 'lucide-react';
 
 export default function Navigation() {
@@ -61,10 +62,21 @@ export default function Navigation() {
           </button>
           <button
             onClick={() => scrollTo('contact')}
-            className="btn-blueprint"
+            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors"
           >
-            Sign Up
+            Questions
           </button>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/login"
+              className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link to="/signup" className="btn-blueprint">
+              Sign Up
+            </Link>
+          </div>
         </div>
 
         {/* Mobile menu button */}
@@ -104,10 +116,19 @@ export default function Navigation() {
             </button>
             <button
               onClick={() => scrollTo('contact')}
-              className="btn-blueprint w-full mt-2"
+              className="font-condensed text-xs uppercase tracking-widest text-ink-black text-left py-2"
             >
-              Sign Up
+              Questions
             </button>
+            <Link to="/signup" className="btn-blueprint w-full mt-2">
+              Sign Up
+            </Link>
+            <Link
+              to="/login"
+              className="font-condensed text-xs uppercase tracking-widest text-ink-black text-left py-2"
+            >
+              Sign In
+            </Link>
           </div>
         </div>
       )}

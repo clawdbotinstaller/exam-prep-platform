@@ -1,7 +1,7 @@
 import { useRef, useLayoutEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ExternalLink, FileText, UserPlus } from 'lucide-react';
+import { ExternalLink, FileText } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,18 +25,12 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
   const titleRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const [activeFilter, setActiveFilter] = useState('All');
 
   const filteredCards = activeFilter === 'All'
     ? examCards
-    : examCards.filter(card => card.topic === activeFilter || (activeFilter === 'Word Problems' && card.topic === 'AppProblems'));
-
-  const scrollToSignUp = () => {
-    const el = document.getElementById('contact');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+    : examCards.filter(card => card.topic === activeFilter);
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -45,71 +39,77 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
     const ctx = gsap.context(() => {
       const cardElements = cardsRef.current?.querySelectorAll('.exam-card');
 
-      const scrollTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: '+=130%',
-          pin: true,
-          scrub: 0.6,
-        },
-      });
-
-      // ENTRANCE (0% - 30%)
-      // Title + chips
-      scrollTl.fromTo(
+      // Title animation on scroll
+      gsap.fromTo(
         titleRef.current,
-        { x: '-30vw', opacity: 0 },
-        { x: 0, opacity: 1, ease: 'power2.out' },
-        0
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: titleRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+        }
       );
 
-      // Cards stagger
+      // Cards stagger on scroll
       if (cardElements && cardElements.length > 0) {
-        scrollTl.fromTo(
-          cardElements,
-          { y: '100vh', rotate: -3, opacity: 0 },
-          {
-            y: 0,
-            rotate: 0,
-            opacity: 1,
-            stagger: 0.03,
-            ease: 'power2.out',
-          },
-          0.05
-        );
+        cardElements.forEach((card, index) => {
+          gsap.fromTo(
+            card,
+            { y: 40, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.6,
+              delay: index * 0.08,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: card,
+                start: 'top 90%',
+                toggleActions: 'play none none reverse',
+              },
+            }
+          );
+        });
       }
 
       // Preview card
-      scrollTl.fromTo(
+      gsap.fromTo(
         previewRef.current,
-        { x: '60vw', opacity: 0 },
-        { x: 0, opacity: 1, ease: 'power2.out' },
-        0.1
+        { x: 40, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: previewRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+        }
       );
 
-      // EXIT (70% - 100%)
-      if (cardElements && cardElements.length > 0) {
-        scrollTl.fromTo(
-          cardElements,
-          { x: 0, opacity: 1 },
-          { x: '-18vw', opacity: 0, ease: 'power2.in' },
-          0.7
-        );
-      }
-
-      scrollTl.fromTo(
-        previewRef.current,
-        { x: 0, opacity: 1 },
-        { x: '45vw', opacity: 0, ease: 'power2.in' },
-        0.7
-      );
-
-      scrollTl.fromTo(
-        titleRef.current,
-        { y: 0, opacity: 1 },
-        { y: '-10vh', opacity: 0.2, ease: 'power2.in' },
-        0.7
+      // CTA banner
+      gsap.fromTo(
+        ctaRef.current,
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: ctaRef.current,
+            start: 'top 90%',
+            toggleActions: 'play none none reverse',
+          },
+        }
       );
     }, section);
 
@@ -120,21 +120,25 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
     <section
       ref={sectionRef}
       id="archive"
-      className={`section-pinned flex items-center ${className}`}
+      className={`py-20 lg:py-28 ${className}`}
       style={{ backgroundColor: '#F5F1E8' }}
     >
       {/* Graph paper background */}
       <div className="absolute inset-0 graph-paper" />
 
-      <div className="w-full px-8 lg:px-[8vw] py-20 relative z-10">
+      <div className="w-full px-8 lg:px-[8vw] relative z-10">
         {/* Title and filters */}
-        <div ref={titleRef} className="mb-6">
+        <div ref={titleRef} className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <h2 className="font-serif font-semibold text-ink-black text-2xl lg:text-3xl">
               Browse the Archive
             </h2>
-            <span className="date-stamp">80+ Papers</span>
+            <span className="date-stamp">80+ Questions</span>
           </div>
+          <p className="font-sans text-pencil-gray text-sm lg:text-base max-w-xl mb-4">
+            Questions from 5 midterms and finals, organized by topic.
+            Each includes a full worked solution.
+          </p>
           <div className="flex flex-wrap gap-2">
             {filters.map((filter) => (
               <button
@@ -162,25 +166,25 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
             {filteredCards.map((card) => (
               <div
                 key={card.id}
-                className="exam-card index-card p-4 lg:p-5 hover:shadow-index-hover transition-all cursor-pointer group"
+                className="exam-card index-card p-4 lg:p-5 hover:shadow-lg transition-all cursor-pointer group"
               >
                 {/* Date stamp */}
                 <div className="flex items-center justify-between mb-3">
                   <span className="date-stamp text-[9px]">{card.date}</span>
                   <FileText className="w-4 h-4 text-pencil-gray group-hover:text-blueprint-navy transition-colors" strokeWidth={1.5} />
                 </div>
-                
+
                 {/* Card content */}
                 <div className="mb-3">
                   <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
                     {card.type} {card.year}
                   </span>
                 </div>
-                
+
                 <div className="font-mono text-sm text-ink-black mb-4 min-h-[40px]">
                   {card.problem}
                 </div>
-                
+
                 <div className="topic-tag">
                   {card.topic}
                 </div>
@@ -199,7 +203,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
               </span>
               <div className="topic-tag">Integration</div>
             </div>
-            
+
             <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
               <p className="font-sans text-pencil-gray text-sm mb-4">
                 Evaluate using integration by parts:
@@ -212,31 +216,40 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
                 6 points • Midterm 2023A
               </p>
             </div>
-            
+
             <button className="w-full py-3 bg-blueprint-navy/10 text-blueprint-navy font-condensed text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blueprint-navy hover:text-paper-cream transition-colors">
-              Open
+              View Solution
               <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.5} />
             </button>
           </div>
         </div>
 
-        {/* Sign-up CTA Banner */}
-        <div className="mt-8 lg:mt-12 index-card p-6 lg:p-8 flex flex-col lg:flex-row items-center justify-between gap-4">
-          <div>
-            <h3 className="font-serif font-semibold text-ink-black text-lg lg:text-xl mb-1">
-              Want to see full solutions?
-            </h3>
-            <p className="font-sans text-pencil-gray text-sm">
-              Sign up free to access step-by-step solutions for all 340+ problems.
-            </p>
+        {/* Sign-up CTA Banner - softer, more informative */}
+        <div
+          ref={ctaRef}
+          className="mt-12 lg:mt-16 index-card p-6 lg:p-8"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="lg:max-w-lg">
+              <h3 className="font-serif font-semibold text-ink-black text-lg lg:text-xl mb-2">
+                How this works
+              </h3>
+              <p className="font-sans text-pencil-gray text-sm leading-relaxed">
+                We group questions by pattern — integration by parts with polynomials,
+                ratio test with factorials, etc. You study the pattern, not just one problem.
+                <span className="text-blueprint-navy font-medium"> Sign up free</span> to see
+                step-by-step solutions and track which patterns you've mastered.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
+              <button className="btn-blueprint">
+                Sign Up Free
+              </button>
+              <button className="inline-flex items-center justify-center gap-2 px-5 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors">
+                Learn More
+              </button>
+            </div>
           </div>
-          <button
-            onClick={scrollToSignUp}
-            className="btn-blueprint inline-flex items-center gap-2 whitespace-nowrap"
-          >
-            <UserPlus className="w-4 h-4" strokeWidth={1.5} />
-            Sign Up Free
-          </button>
         </div>
       </div>
     </section>

@@ -2,6 +2,7 @@ import { useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -31,27 +32,27 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
           { scaleY: 0, transformOrigin: 'top' },
           {
             scaleY: 1,
-            duration: 0.6,
-            stagger: 0.05,
+            duration: 0.8,
+            stagger: 0.08,
             ease: 'power2.out',
-            delay: 0.2,
+            delay: 0.3,
           }
         );
       }
 
-      // Headline animation
+      // Headline animation - smoother, more deliberate
       const headlineWords = headlineRef.current?.querySelectorAll('.headline-line');
       if (headlineWords && headlineWords.length > 0) {
         gsap.fromTo(
           headlineWords,
-          { y: 60, opacity: 0 },
+          { y: 40, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            duration: 0.7,
-            stagger: 0.1,
+            duration: 0.8,
+            stagger: 0.15,
             ease: 'power3.out',
-            delay: 0.4,
+            delay: 0.5,
           }
         );
       }
@@ -59,27 +60,27 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
       // Subheadline
       gsap.fromTo(
         subheadRef.current,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.8 }
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', delay: 1 }
       );
 
-      // CTA button
+      // CTA buttons
       gsap.fromTo(
         ctaRef.current,
-        { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out', delay: 1 }
+        { y: 15, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 1.2 }
       );
 
-      // Image card
+      // Image card - gentler entrance
       gsap.fromTo(
         imageRef.current,
-        { x: 200, opacity: 0 },
+        { x: 60, opacity: 0 },
         {
           x: 0,
           opacity: 1,
-          duration: 0.9,
-          ease: 'power3.out',
-          delay: 0.5,
+          duration: 1,
+          ease: 'power2.out',
+          delay: 0.7,
         }
       );
 
@@ -87,73 +88,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
       gsap.fromTo(
         captionRef.current,
         { opacity: 0 },
-        { opacity: 1, duration: 0.5, delay: 1.1 }
-      );
-
-      // Scroll-driven exit animation
-      const scrollTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: '+=130%',
-          pin: true,
-          scrub: 0.6,
-          onLeaveBack: () => {
-            // Reset all elements to visible when scrolling back
-            if (headlineWords && headlineWords.length > 0) {
-              gsap.set(headlineWords, { x: 0, opacity: 1 });
-            }
-            gsap.set(subheadRef.current, { y: 0, opacity: 1 });
-            gsap.set(ctaRef.current, { y: 0, opacity: 1 });
-            gsap.set(imageRef.current, { x: 0, opacity: 1 });
-            gsap.set(gridRef.current, { opacity: 1 });
-          },
-        },
-      });
-
-      // EXIT phase (70% - 100%)
-      if (headlineWords && headlineWords.length > 0) {
-        scrollTl.fromTo(
-          headlineWords,
-          { x: 0, opacity: 1 },
-          { x: '-40vw', opacity: 0, ease: 'power2.in' },
-          0.7
-        );
-      }
-
-      scrollTl.fromTo(
-        subheadRef.current,
-        { y: 0, opacity: 1 },
-        { y: '-15vh', opacity: 0, ease: 'power2.in' },
-        0.7
-      );
-
-      scrollTl.fromTo(
-        ctaRef.current,
-        { y: 0, opacity: 1 },
-        { y: '12vh', opacity: 0, ease: 'power2.in' },
-        0.7
-      );
-
-      scrollTl.fromTo(
-        imageRef.current,
-        { x: 0, opacity: 1 },
-        { x: '55vw', opacity: 0, ease: 'power2.in' },
-        0.7
-      );
-
-      scrollTl.fromTo(
-        captionRef.current,
-        { opacity: 1 },
-        { opacity: 0, ease: 'power2.in' },
-        0.75
-      );
-
-      scrollTl.fromTo(
-        gridRef.current,
-        { opacity: 1 },
-        { opacity: 0.2, ease: 'power2.in' },
-        0.7
+        { opacity: 1, duration: 0.6, delay: 1.4 }
       );
     }, section);
 
@@ -167,18 +102,11 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
     }
   };
 
-  const scrollToSignUp = () => {
-    const el = document.getElementById('contact');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section
       ref={sectionRef}
       id="hero"
-      className={`section-pinned flex items-center ${className}`}
+      className={`min-h-screen flex items-center py-20 lg:py-0 ${className}`}
       style={{ backgroundColor: '#F5F1E8' }}
     >
       {/* Graph paper background */}
@@ -190,7 +118,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
           <div
             key={i}
             className="grid-line absolute top-0 h-full w-px"
-            style={{ 
+            style={{
               left: `${(i / 11) * 100}%`,
               backgroundColor: 'rgba(61, 61, 61, 0.12)'
             }}
@@ -205,7 +133,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
 
       {/* Content */}
       <div className="relative z-10 w-full px-8 lg:px-[8vw]">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 lg:gap-0">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-0">
           {/* Left content */}
           <div className="max-w-xl">
             {/* Date stamp */}
@@ -214,7 +142,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
             </div>
 
             {/* Headline */}
-            <div ref={headlineRef} className="mb-8">
+            <div ref={headlineRef} className="mb-6">
               <div className="headline-line overflow-hidden">
                 <h1 className="font-serif font-semibold text-ink-black text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-none">
                   Real Questions
@@ -235,28 +163,37 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
             {/* Subheadline */}
             <p
               ref={subheadRef}
-              className="font-sans text-pencil-gray text-base lg:text-lg leading-relaxed mb-8 max-w-md"
+              className="font-sans text-pencil-gray text-base lg:text-lg leading-relaxed mb-6 max-w-md"
             >
-              Midterms & finals from 2022–2024. Sorted by topic. No generic
-              practice problems.
+              Midterms and finals from 2022–2024, organized by the patterns professors actually repeat.
+              Same structures, different numbers.
             </p>
 
-            {/* CTAs */}
+            {/* Feature pills */}
+            <div className="flex flex-wrap gap-2 mb-8">
+              {['Pattern-matched', 'Full solutions', 'Not AI-generated'].map((item) => (
+                <span key={item} className="topic-tag text-[10px]">
+                  {item}
+                </span>
+              ))}
+            </div>
+
+            {/* CTAs - cleaner, less aggressive */}
             <div ref={ctaRef} className="flex flex-col sm:flex-row gap-3">
               <button
-                onClick={scrollToSignUp}
-                className="btn-blueprint inline-flex items-center justify-center gap-2 group"
-              >
-                <UserPlus className="w-4 h-4" strokeWidth={1.5} />
-                Sign Up Free
-              </button>
-              <button
                 onClick={scrollToArchive}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors"
+                className="btn-blueprint inline-flex items-center justify-center gap-2 group"
               >
                 Browse the Archive
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
               </button>
+              <Link
+                to="/signup"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors"
+              >
+                <UserPlus className="w-4 h-4" strokeWidth={1.5} />
+                Sign Up Free
+              </Link>
             </div>
           </div>
 
