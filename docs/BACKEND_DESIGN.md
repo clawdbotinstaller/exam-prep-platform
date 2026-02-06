@@ -16,9 +16,12 @@ CREATE TABLE users (
     id TEXT PRIMARY KEY,                    -- UUID
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,            -- bcrypt
-    credits INTEGER DEFAULT 5,              -- Starting credits
-    has_unlimited BOOLEAN DEFAULT FALSE,    -- $20 tier
-    unlimited_expires_at INTEGER,           -- Timestamp (optional)
+    credits INTEGER DEFAULT 5,              -- Current credit balance
+    plan TEXT DEFAULT 'free',               -- 'free' | 'starter' | 'unlimited'
+    monthly_credits INTEGER DEFAULT 5,      -- Plan allowance (ignored for unlimited)
+    credits_reset_at INTEGER,               -- Next monthly reset timestamp
+    stripe_customer_id TEXT,
+    stripe_subscription_id TEXT,
     created_at INTEGER NOT NULL,            -- Unix timestamp
     updated_at INTEGER NOT NULL
 );
@@ -70,6 +73,8 @@ CREATE TABLE questions (
     course_id TEXT NOT NULL,
     exam_id TEXT,                           -- NULL if AI-generated
     topic_id TEXT NOT NULL,
+    pattern_id TEXT,                        -- Groups similar question patterns
+    techniques TEXT,                        -- JSON array: ["integration_by_parts", "trig_sub"]
 
     -- Question content
     question_text TEXT NOT NULL,            -- LaTeX supported
@@ -79,6 +84,8 @@ CREATE TABLE questions (
     -- Metadata
     question_type TEXT DEFAULT 'free_response', -- 'multiple_choice', 'free_response'
     difficulty INTEGER CHECK (difficulty BETWEEN 1 AND 5),
+    difficulty_reason TEXT,                 -- Why it's rated 1-5 (length/trickiness)
+    frequency_score REAL,                   -- 0-1 rate across exams for this pattern
     points INTEGER,                         -- Original exam points
     time_estimate INTEGER,                  -- Minutes to solve
 
@@ -112,6 +119,25 @@ CREATE TABLE question_options (
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
 );
 
+-- Question pattern groups (for repeat frequency across exams)
+CREATE TABLE question_patterns (
+    id TEXT PRIMARY KEY,
+    course_id TEXT NOT NULL,
+    topic_id TEXT NOT NULL,
+    name TEXT NOT NULL,                     -- "IBP + log(x)" pattern
+    techniques TEXT,                        -- JSON array of techniques
+    canonical_form TEXT,                    -- Normalized text or LaTeX
+    appearance_count INTEGER DEFAULT 0,     -- Total occurrences
+    appearance_rate REAL,                   -- appearance_count / total_exams
+    first_seen_year INTEGER,
+    last_seen_year INTEGER,
+    example_question_id TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES courses(id),
+    FOREIGN KEY (topic_id) REFERENCES topics(id)
+);
+
 -- User progress tracking
 CREATE TABLE user_progress (
     id TEXT PRIMARY KEY,
@@ -143,7 +169,7 @@ CREATE TABLE credit_transactions (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     amount INTEGER NOT NULL,                -- Positive = add, negative = use
-    transaction_type TEXT NOT NULL,         -- 'signup_bonus', 'purchase', 'question_view', 'analysis_view', 'refund'
+    transaction_type TEXT NOT NULL,         -- 'signup_bonus', 'monthly_refresh', 'purchase', 'subscription_renewal', 'question_view', 'analysis_view', 'refund'
 
     -- For purchases
     stripe_payment_intent_id TEXT,
@@ -204,7 +230,7 @@ CREATE INDEX idx_transactions_user ON credit_transactions(user_id);
 
 // POST /api/auth/login
 // Body: { email: string, password: string }
-// Response: { success: true, token: string, user: { id, email, credits, has_unlimited } }
+// Response: { success: true, token: string, user: { id, email, credits, plan, credits_reset_at } }
 
 // POST /api/auth/logout
 // Headers: Authorization: Bearer <token>
@@ -212,7 +238,7 @@ CREATE INDEX idx_transactions_user ON credit_transactions(user_id);
 
 // GET /api/auth/me
 // Headers: Authorization: Bearer <token>
-// Response: { user: { id, email, credits, has_unlimited, created_at } }
+// Response: { user: { id, email, credits, plan, credits_reset_at, created_at } }
 ```
 
 ### Courses
@@ -334,13 +360,13 @@ CREATE INDEX idx_transactions_user ON credit_transactions(user_id);
 // Headers: Authorization: Bearer <token>
 // Response: {
 //   credits: 5,
-//   has_unlimited: false,
-//   unlimited_expires_at: null
+//   plan: "free",
+//   credits_reset_at: 1738800000
 // }
 
 // POST /api/credits/purchase
 // Headers: Authorization: Bearer <token>
-// Body: { product: "credits_10" | "unlimited" }
+// Body: { plan: "starter" | "unlimited" }
 // Response: {
 //   checkout_url: "https://checkout.stripe.com/...",
 //   session_id: "cs_..."
@@ -509,7 +535,7 @@ worker/src/
 function requireCredits(amount: number) {
   return async (request: Request, env: Env) => {
     const user = await getUserFromToken(request, env);
-    if (user.credits < amount && !user.has_unlimited) {
+    if (user.credits < amount && user.plan !== 'unlimited') {
       return Response.json({
         error: "Insufficient credits",
         credits_needed: amount,

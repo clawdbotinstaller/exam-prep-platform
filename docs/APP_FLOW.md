@@ -1,7 +1,7 @@
 # App Flow Document
 
-> **Last Updated:** 2026-02-05
-> **Status:** MVP Flow Complete
+> **Last Updated:** 2026-02-06
+> **Status:** MVP Flow Updated (credits + archive + midterms)
 
 ---
 
@@ -14,9 +14,12 @@
 | `/signup` | Signup | New user registration | No |
 | `/dashboard` | Dashboard | Course selection, credit balance | Yes |
 | `/course/calc2` | Course Home | Overview of Calc 2 prep | Yes |
-| `/analysis` | Exam Analysis | Topic breakdown (2 credits) | Yes |
-| `/practice` | Practice Mode | Topic selection + questions | Yes |
-| `/question/:id` | Question View | Individual question + solution | Yes |
+| `/course/:slug/analysis` | Exam Analysis | Topic breakdown (2 credits) | Yes |
+| `/course/:slug/analysis/:topicId` | Topic Deep Dive | Patterns, traps, study strategy | Yes |
+| `/course/:slug/practice` | Practice Mode | Topic selection + questions | Yes |
+| `/course/:slug/archive` | Archive | Browse past exam questions | Yes |
+| `/course/:slug/archive/midterm/:difficulty` | Practice Midterm | Easy / sample / hard | Yes |
+| `/course/:slug/question/:id` | Question View | Individual question + solution | Yes |
 | `/upgrade` | Paywall | Credit purchase options | Yes |
 | `/checkout` | Stripe Checkout | Payment processing | Yes |
 | `/success` | Payment Success | Credit confirmation | Yes |
@@ -33,18 +36,18 @@ LANDING PAGE (/)
 ├── Social proof (fake initially: "Join 100+ students")
 └── CTA: "Start Studying Free"
     └── SIGNUP PAGE (/signup)
-        ├── Email input
-        ├── Password input (8+ chars, 1 number)
-        ├── Confirm password
-        ├── Submit
-        └── On success:
+            ├── Email input
+            ├── Password input (8+ chars, 1 number)
+            ├── Confirm password
+            ├── Submit
+            └── On success:
             ├── Create user in D1
-            ├── Set 10 credits (updated from research)
+            ├── Set 5 credits (monthly free tier)
             ├── Create JWT session
             └── REDIRECT → DASHBOARD (/dashboard)
 ```
 
-**Credit Strategy:** 10 initial credits (research showed 5 is too few)
+**Credit Strategy:** 5 credits per month on free tier (refreshes monthly)
 
 ---
 
@@ -69,7 +72,7 @@ LANDING PAGE (/)
 
 ```
 DASHBOARD (/dashboard)
-├── Header: Logo, credit balance (10), profile link
+├── Header: Logo, credit balance (5), profile link
 ├── Welcome message
 ├── Course card: Calculus 2
 │   ├── Progress indicator (optional for MVP)
@@ -79,10 +82,12 @@ DASHBOARD (/dashboard)
 │           ├── Topics covered count
 │           ├── Actions:
 │           │   ├── [View Exam Analysis] → 2 credits
-│           │   └── [Practice Questions] → 1 credit/question
+│           │   ├── [Practice Questions] → 1 credit/question
+│           │   ├── [Archive by Topic] → 3 questions / 1 credit
+│           │   └── [Practice Midterm] → 3 credits
 │           └── Click: "View Exam Analysis"
 │               └── Check: Do they have 2+ credits?
-│                   ├── YES → ANALYSIS PAGE (/analysis)
+│                   ├── YES → ANALYSIS PAGE (/course/calc2/analysis)
 │                   └── NO → UPGRADE PAGE (/upgrade)
 ```
 
@@ -91,21 +96,26 @@ DASHBOARD (/dashboard)
 ## User Flow 4: Analysis Page (2 Credits)
 
 ```
-ANALYSIS PAGE (/analysis)
-├── Header: Credit balance (deducted 2, now shows 8)
+ANALYSIS PAGE (/course/calc2/analysis)
+├── Header: Credit balance (deducted 2, now shows 3)
 ├── Page title: "Calculus 2 Exam Analysis"
 ├── Section 1: Topic Frequency
 │   ├── Bar chart: Integration (28%), Series (32%), Applications (22%), etc.
 │   └── Insight: "Series appears most often - prioritize this"
-├── Section 2: Difficulty Distribution
+├── Section 2: Topic Deep Dive (click a topic)
+│   ├── Most common question types for the topic
+│   ├── How often similar questions repeat across exams
+│   ├── Tricky steps / common mistakes
+│   └── Suggested study strategy
+├── Section 3: Difficulty Distribution
 │   ├── Pie/donut chart
 │   └── Easy 30%, Medium 45%, Hard 25%
-├── Section 3: High-Value Topics
+├── Section 4: High-Value Topics
 │   ├── Table: Topic | Avg Points | Frequency
 │   └── Highlight: "Integration by parts: 15 pts/question"
-├── Section 4: Study Strategy
+├── Section 5: Study Strategy
 │   └── AI-generated: "Based on patterns, focus on..."
-└── CTA: "Practice These Topics" → PRACTICE PAGE (/practice)
+└── CTA: "Practice These Topics" → PRACTICE PAGE (/course/calc2/practice)
 ```
 
 **State Change:** Credits decremented immediately on page load (atomic)
@@ -115,7 +125,7 @@ ANALYSIS PAGE (/analysis)
 ## User Flow 5: Practice Questions (1 Credit Each)
 
 ```
-PRACTICE PAGE (/practice)
+PRACTICE PAGE (/course/calc2/practice)
 ├── Header: Credit balance
 ├── Step 1: Select Weak Topics
 │   ├── Checkbox list:
@@ -128,7 +138,7 @@ PRACTICE PAGE (/practice)
 │           ├── YES → Generate questions
 │           └── NO → UPGRADE PAGE (/upgrade)
 │
-└── Step 2: Question View (QUESTION/:id)
+└── Step 2: Question View (QUESTION/:id) (/course/calc2/question/:id)
     ├── Progress: "Question 1 of 3"
     ├── Question text (AI-generated)
     ├── [Show Solution] button
@@ -143,19 +153,48 @@ PRACTICE PAGE (/practice)
 
 ---
 
-## User Flow 6: Paywall/Upgrade
+## User Flow 6: Archive + Practice Midterms
+
+```
+ARCHIVE PAGE (/course/calc2/archive)
+├── Header: Credit balance
+├── Filters: Topic, Exam Type (Midterm/Final), Year
+├── Mode toggle:
+│   ├── [Topic Practice] → 3 questions for 1 credit
+│   └── [Practice Midterm] → 3 credits
+│
+├── Topic Practice Flow
+│   ├── Select a topic or section
+│   ├── Click "Generate 3 Questions"
+│   ├── Check: Do they have 1+ credit?
+│   │   ├── YES → Deduct 1 credit, load 3 questions
+│   │   └── NO → UPGRADE PAGE (/upgrade)
+│
+└── Practice Midterm Flow
+    ├── Choose difficulty:
+    │   ├── Easy Midterm (shorter + easier mix)
+    │   ├── Sample Midterm (realistic exam mix)
+    │   └── Hard Midterm (longest + hardest)
+    ├── Check: Do they have 3+ credits?
+    │   ├── YES → Deduct 3 credits, launch midterm session
+    │   └── NO → UPGRADE PAGE (/upgrade)
+```
+
+---
+
+## User Flow 7: Paywall/Upgrade
 
 ```
 UPGRADE PAGE (/upgrade)
 ├── Header: Current credits (low)
 ├── Headline: "Need more practice?"
-├── Pricing Cards (3 options):
+├── Pricing Cards (2 options):
 │   │
-│   ├── [CREDITS]        [WEEK PASS]      [SEMESTER]
-│   │  $4.99             $7.99            $49.99
-│   │  10 credits        Unlimited        Unlimited
-│   │  Never expire      7 days           Full semester
-│   │  ⭐ Popular        Best value
+│   ├── [STARTER]         [UNLIMITED]
+│   │  $10/month          $20/month
+│   │  15 credits/month   Unlimited access
+│   │  Monthly refresh    Monthly billing
+│   │  ⭐ Popular          Best value
 │   │
 │   └── Selection → CHECKOUT (/checkout)
 │       └── Stripe Checkout hosted page
@@ -254,15 +293,15 @@ OpenAI API error:
 
 ## State Management
 
-### Global State (Svelte Store)
+### Global State (React Context)
 ```typescript
 interface AppState {
   user: {
     id: string;
     email: string;
     credits: number;
-    hasUnlimited: boolean;
-    unlimitedExpiry?: Date;
+    plan: 'free' | 'starter' | 'unlimited';
+    creditsResetAt?: Date;
   } | null;
 
   currentCourse: {
@@ -272,8 +311,7 @@ interface AppState {
   };
 
   cart: {
-    selectedProduct: 'credits' | 'week' | 'semester' | null;
-    quantity?: number;
+    selectedPlan: 'starter' | 'unlimited' | null;
   };
 }
 ```

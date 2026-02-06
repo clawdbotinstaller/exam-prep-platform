@@ -8,6 +8,7 @@
 | TECH_STACK.md | Technology stack and architecture decisions |
 | APP_FLOW.md | User flows and application navigation |
 | DESIGN_V2_ENGINEERING_LIBRARY.md | UI/UX design system and aesthetic |
+| DATA_INGESTION_PLAN.md | PDF → structured data pipeline and validation |
 
 ## Backend
 

@@ -1,13 +1,14 @@
 # Tech Stack Document
 
-> **Last Updated:** 2026-02-05
-> **Version:** 1.1
+> **Last Updated:** 2026-02-06
+> **Version:** 1.2
 > **Status:** Frozen for MVP
 
 ---
 
 ## Change Log
 
+**v1.2:** Upgraded frontend tooling to Tailwind CSS 4 + @tailwindcss/vite
 **v1.1:** Updated frontend from Svelte to React + GSAP based on existing codebase
 
 ---

@@ -134,10 +134,10 @@
 ### Section 7: Pricing
 **Headline:** Get access
 
-**Two tiers:**
-- **Free** - 5 credits, free on signup, unlock one analysis, and 5 questions
-- **Starter** — 10 credits — $4.99 — Browse and unlock individual questions, billed monthly
-- **Full Archive** — Unlimited — $19.99 — Full access for all courses, billed monthly
+**Two tiers + free:**
+- **Free** — 5 credits per month
+- **Starter** — 15 credits/month — $10/month
+- **Full Archive** — Unlimited — $20/month
 
 
 **Visual:** Index cards or library checkout cards

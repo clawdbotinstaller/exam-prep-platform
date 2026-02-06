@@ -31,7 +31,7 @@
 
 1. **User Authentication**
    - Email/password signup
-   - 5 free credits on registration
+   - 5 free credits per month (starts on registration)
    - Session persistence
 
 2. **Exam Analysis Dashboard**
@@ -47,15 +47,22 @@
    - References source exam (year, question number, points)
    - Cost: 1 credit per question
 
-4. **Credit System**
-   - 5 free credits on signup
-   - $10 for 10 credits
-   - $20 for unlimited access (semester pass)
-   - Credit balance display
+4. **Exam Archive + Practice Midterms**
+   - Browse real past exam questions by topic or section
+   - Topic practice bundles: 3 questions for 1 credit
+   - Practice midterms (easy / sample / hard)
+   - Midterm sessions emulate real exam length and difficulty
+   - Cost: 3 credits per midterm
 
-5. **Payment Integration**
-   - Stripe Checkout for credit purchase
-   - Webhook for instant credit delivery
+5. **Credit System**
+   - Free tier: 5 credits per month
+   - $10/month: 15 credits per month
+   - $20/month: Unlimited access
+   - Credit balance display and monthly reset
+
+6. **Payment Integration**
+   - Stripe Checkout for subscription purchase
+   - Webhook for instant credit delivery and plan status
 
 ### Post-MVP Features (Nice to Have)
 
@@ -75,7 +82,7 @@
 
 3. **As a student**, I want to focus on topics I struggle with, so I can improve my weak areas efficiently.
 
-4. **As a student**, I want a pay-as-you-go option, so I don't need to commit to a subscription.
+4. **As a student**, I want a monthly plan with predictable credits, so I can budget study time.
 
 5. **As a student**, I want to see the source of each practice question, so I know it's based on real exams.
 
@@ -108,7 +115,7 @@
 - Single course: Calculus 2
 - 4 past exams as data source
 - Email/password auth only
-- Credit-based payments only (no subscriptions yet)
+- Monthly credit subscriptions
 - Web app only (no native apps)
 
 ### Out of Scope (MVP)

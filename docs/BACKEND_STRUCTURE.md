@@ -14,9 +14,12 @@ CREATE TABLE users (
   id TEXT PRIMARY KEY,           -- UUID v4
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,   -- bcrypt hash
-  credits INTEGER DEFAULT 10,    -- Updated from research
-  has_unlimited BOOLEAN DEFAULT FALSE,
-  unlimited_until TIMESTAMP,     -- NULL if not unlimited
+  credits INTEGER DEFAULT 5,     -- Free tier monthly credits
+  plan TEXT DEFAULT 'free',      -- 'free' | 'starter' | 'unlimited'
+  monthly_credits INTEGER DEFAULT 5,
+  credits_reset_at TIMESTAMP,    -- Next monthly reset
+  stripe_customer_id TEXT,
+  stripe_subscription_id TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -86,6 +89,8 @@ CREATE TABLE questions (
   id TEXT PRIMARY KEY,           -- UUID
   topic_id TEXT NOT NULL,
   course_id TEXT NOT NULL,
+  pattern_id TEXT,               -- Groups similar question patterns
+  techniques TEXT,               -- JSON array of techniques
 
   -- Question content
   question_text TEXT NOT NULL,   -- LaTeX or plain text
@@ -94,6 +99,8 @@ CREATE TABLE questions (
 
   -- Metadata
   difficulty INTEGER CHECK (difficulty BETWEEN 1 AND 5),
+  difficulty_reason TEXT,
+  frequency_score DECIMAL(3,2),  -- 0.00 to 1.00 across exams
   estimated_time INTEGER,        -- Minutes to solve
 
   -- Source attribution
@@ -117,6 +124,28 @@ CREATE TABLE questions (
 CREATE INDEX idx_questions_topic ON questions(topic_id);
 CREATE INDEX idx_questions_course ON questions(course_id);
 CREATE INDEX idx_questions_difficulty ON questions(difficulty);
+```
+
+### Table: `question_patterns`
+```sql
+CREATE TABLE question_patterns (
+  id TEXT PRIMARY KEY,
+  course_id TEXT NOT NULL,
+  topic_id TEXT NOT NULL,
+  name TEXT NOT NULL,                 -- "IBP + log(x)" pattern
+  techniques TEXT,                    -- JSON array
+  canonical_form TEXT,                -- Normalized text/LaTeX
+  appearance_count INTEGER DEFAULT 0,
+  appearance_rate DECIMAL(3,2),
+  first_seen_year INTEGER,
+  last_seen_year INTEGER,
+  example_question_id TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE
+);
 ```
 
 ### Table: `user_progress`
@@ -151,7 +180,7 @@ CREATE TABLE credit_transactions (
   user_id TEXT NOT NULL,
 
   -- Transaction details
-  type TEXT NOT NULL CHECK (type IN ('signup_bonus', 'daily_bonus', 'purchase', 'usage', 'refund')),
+  type TEXT NOT NULL CHECK (type IN ('signup_bonus', 'monthly_refresh', 'subscription_renewal', 'purchase', 'usage', 'refund')),
   amount INTEGER NOT NULL,       -- Positive = added, Negative = spent
   balance_after INTEGER NOT NULL,-- Credit balance after transaction
 

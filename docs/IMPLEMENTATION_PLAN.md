@@ -1,8 +1,8 @@
 # Implementation Plan
 
-> **Last Updated:** 2026-02-05
+> **Last Updated:** 2026-02-06
 > **Timeline:** 14 days to MVP
-> **Status:** Planning Phase (no code written yet)
+> **Status:** Landing built + backend skeleton in place
 
 ---
 
@@ -17,6 +17,8 @@
 **Files:**
 - Extract from: `exams/midterm-2022.pdf`, `exams/midterm-2023.pdf`, `exams/final-2023.pdf`, `exams/midterm-2024.pdf`
 - Create: `data/extracted-questions.json`
+
+**Reference:** `docs/DATA_INGESTION_PLAN.md`
 
 **Process for each exam:**
 1. Extract text from PDF (use pdf-parse or manual if needed)

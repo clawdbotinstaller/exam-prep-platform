@@ -281,6 +281,7 @@
   }
 
   /* Red exam stamp - from Stitch */
+  .exam-stamp,
   .exam-stamp-red {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;

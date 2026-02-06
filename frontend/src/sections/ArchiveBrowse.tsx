@@ -9,14 +9,14 @@ interface ArchiveBrowseProps {
   className?: string;
 }
 
-const filters = ['All', 'Integration', 'Series', 'DiffEq', 'AppProblems'];
+const filters = ['All', 'Integration', 'Series', 'DiffEq', 'Word Problems'];
 
 const examCards = [
   { id: 1, year: '2023A', type: 'Midterm', topic: 'Integration', problem: '∫ x² ln(x) dx', date: 'MAR 15 2023' },
   { id: 2, year: '2022', type: 'Final', topic: 'Series', problem: '∑ ((-1)ⁿ / n²)', date: 'DEC 12 2022' },
   { id: 3, year: '2024B', type: 'Midterm', topic: 'DiffEq', problem: 'dy/dx = y² cos(x)', date: 'FEB 28 2024' },
   { id: 4, year: '2023B', type: 'Midterm', topic: 'Integration', problem: '∫ eˣ sin(x) dx', date: 'APR 05 2023' },
-  { id: 5, year: '2022', type: 'Midterm', topic: 'AppProblems', problem: 'Volume of revolution', date: 'OCT 20 2022' },
+  { id: 5, year: '2022', type: 'Midterm', topic: 'Word Problems', problem: 'Volume of revolution', date: 'OCT 20 2022' },
   { id: 6, year: '2024A', type: 'Final', topic: 'Series', problem: 'Ratio test convergence', date: 'MAY 08 2024' },
 ];
 
@@ -29,7 +29,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
 
   const filteredCards = activeFilter === 'All'
     ? examCards
-    : examCards.filter(card => card.topic === activeFilter);
+    : examCards.filter(card => card.topic === activeFilter || (activeFilter === 'Word Problems' && card.topic === 'AppProblems'));
 
   const scrollToSignUp = () => {
     const el = document.getElementById('contact');
