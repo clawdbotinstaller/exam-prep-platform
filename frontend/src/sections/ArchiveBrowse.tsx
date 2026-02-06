@@ -2,6 +2,7 @@ import { useRef, useLayoutEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ExternalLink, FileText } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,6 +19,8 @@ const examCards = [
   { id: 4, year: '2023B', type: 'Midterm', topic: 'Integration', problem: '∫ eˣ sin(x) dx', date: 'APR 05 2023' },
   { id: 5, year: '2022', type: 'Midterm', topic: 'Word Problems', problem: 'Volume of revolution', date: 'OCT 20 2022' },
   { id: 6, year: '2024A', type: 'Final', topic: 'Series', problem: 'Ratio test convergence', date: 'MAY 08 2024' },
+  { id: 7, year: '2023C', type: 'Final', topic: 'DiffEq', problem: 'Solve: y" + 4y = 0', date: 'MAY 15 2023' },
+  { id: 8, year: '2024C', type: 'Midterm', topic: 'Word Problems', problem: 'Work to pump water', date: 'MAR 10 2024' },
 ];
 
 export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
@@ -29,8 +32,8 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
   const [activeFilter, setActiveFilter] = useState('All');
 
   const filteredCards = activeFilter === 'All'
-    ? examCards
-    : examCards.filter(card => card.topic === activeFilter);
+    ? examCards.slice(0, 6)
+    : examCards.filter(card => card.topic === activeFilter).slice(0, 2);
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -217,10 +220,13 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
               </p>
             </div>
 
-            <button className="w-full py-3 bg-blueprint-navy/10 text-blueprint-navy font-condensed text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blueprint-navy hover:text-paper-cream transition-colors">
+            <Link
+              to="/signup"
+              className="w-full py-3 bg-blueprint-navy/10 text-blueprint-navy font-condensed text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blueprint-navy hover:text-paper-cream transition-colors"
+            >
               View Solution
               <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.5} />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -243,9 +249,9 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
-              <button className="btn-blueprint">
+              <Link to="/signup" className="btn-blueprint inline-flex items-center justify-center">
                 See Full Solutions
-              </button>
+              </Link>
               <button className="inline-flex items-center justify-center gap-2 px-5 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors">
                 Learn More
               </button>
