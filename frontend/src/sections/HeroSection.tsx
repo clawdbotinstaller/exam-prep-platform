@@ -1,7 +1,7 @@
 import { useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, UserPlus } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,7 +13,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const headlineRef = useRef<HTMLDivElement>(null);
   const subheadRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLButtonElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLParagraphElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -167,6 +167,13 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
     }
   };
 
+  const scrollToSignUp = () => {
+    const el = document.getElementById('contact');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section
       ref={sectionRef}
@@ -234,15 +241,23 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
               practice problems.
             </p>
 
-            {/* CTA */}
-            <button
-              ref={ctaRef}
-              onClick={scrollToArchive}
-              className="btn-blueprint inline-flex items-center gap-2 group"
-            >
-              Browse the Archive
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
-            </button>
+            {/* CTAs */}
+            <div ref={ctaRef} className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={scrollToSignUp}
+                className="btn-blueprint inline-flex items-center justify-center gap-2 group"
+              >
+                <UserPlus className="w-4 h-4" strokeWidth={1.5} />
+                Sign Up Free
+              </button>
+              <button
+                onClick={scrollToArchive}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors"
+              >
+                Browse the Archive
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
 
           {/* Right content - Image card */}

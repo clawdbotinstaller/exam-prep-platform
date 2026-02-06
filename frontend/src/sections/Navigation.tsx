@@ -63,7 +63,7 @@ export default function Navigation() {
             onClick={() => scrollTo('contact')}
             className="btn-blueprint"
           >
-            Get Access
+            Sign Up
           </button>
         </div>
 
@@ -106,7 +106,7 @@ export default function Navigation() {
               onClick={() => scrollTo('contact')}
               className="btn-blueprint w-full mt-2"
             >
-              Request Access
+              Sign Up
             </button>
           </div>
         </div>

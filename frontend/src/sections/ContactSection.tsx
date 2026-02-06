@@ -1,7 +1,7 @@
 import { useRef, useLayoutEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { CreditCard, CheckCircle } from 'lucide-react';
+import { Send, CheckCircle, UserPlus, Mail } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,7 +14,12 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
   const headlineRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [email, setEmail] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    school: '',
+    message: '',
+  });
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -61,6 +66,10 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
     return () => ctx.revert();
   }, []);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
@@ -74,7 +83,7 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
       style={{ backgroundColor: '#1E3A5F' }}
     >
       {/* Subtle blueprint grid */}
-      <div 
+      <div
         className="absolute inset-0 opacity-10"
         style={{
           backgroundImage: `
@@ -87,85 +96,151 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
 
       <div className="px-8 lg:px-[8vw] relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-16">
-          {/* Left headline */}
+          {/* Left side - Sign up promo */}
           <div ref={headlineRef} className="lg:max-w-md">
+            <div className="inline-flex items-center gap-2 mb-6">
+              <span className="date-stamp !text-paper-cream !border-paper-cream/50">
+                <UserPlus className="w-3 h-3 inline mr-1" strokeWidth={2} />
+                Free Account
+              </span>
+            </div>
+
             <h2 className="font-serif font-semibold text-paper-cream text-3xl lg:text-4xl xl:text-5xl leading-tight mb-4">
-              Permanent Archive Access
+              Get Full Access to the Archive
             </h2>
             <p className="font-sans text-paper-cream/70 text-base lg:text-lg leading-relaxed mb-8">
-              One-time checkout. Unlimited renewals. Access to all 340+ problems with step-by-step solutions.
+              Sign up to unlock step-by-step solutions, track your progress, and save problems for later review.
             </p>
+
+            {/* Benefits list */}
+            <div className="space-y-3 mb-8">
+              {[
+                '340+ problems with full solutions',
+                'Progress tracking across topics',
+                'Save favorites for exam prep',
+                'New exams added each semester',
+              ].map((benefit) => (
+                <div key={benefit} className="flex items-center gap-3">
+                  <CheckCircle className="w-4 h-4 text-highlighter-yellow flex-shrink-0" strokeWidth={2} />
+                  <span className="font-sans text-paper-cream/80 text-sm">{benefit}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Secondary sign-up button */}
+            <button
+              onClick={() => {
+                const el = document.getElementById('signup-form');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="inline-flex items-center gap-2 text-highlighter-yellow font-condensed text-xs uppercase tracking-widest hover:underline"
+            >
+              <Mail className="w-4 h-4" strokeWidth={1.5} />
+              Or contact us with questions
+            </button>
           </div>
 
-          {/* Right checkout card */}
+          {/* Right side - Contact form */}
           <div
             ref={formRef}
+            id="signup-form"
             className="lg:w-[50vw] lg:max-w-xl checkout-card"
           >
             {submitted ? (
               <div className="checkout-card-inner flex flex-col items-center justify-center py-12 text-center">
                 <CheckCircle className="w-16 h-16 text-blueprint-navy mb-4" strokeWidth={1.5} />
                 <h3 className="font-serif font-semibold text-ink-black text-xl mb-2">
-                  Welcome to the archive!
+                  Message sent!
                 </h3>
                 <p className="font-sans text-pencil-gray text-sm">
-                  Your access is now active. Start studying!
+                  We'll get back to you soon.
                 </p>
               </div>
             ) : (
               <div className="checkout-card-inner">
                 {/* Header */}
-                <div className="flex justify-between items-end border-b-2 border-blueprint-navy pb-4 mb-6">
+                <div className="flex items-center justify-between border-b-2 border-blueprint-navy pb-4 mb-6">
                   <div>
                     <h2 className="text-2xl font-bold uppercase tracking-tighter text-blueprint-navy">
-                      Full Archive Access
+                      Contact Us
                     </h2>
                     <p className="font-mono text-[10px] uppercase text-pencil-gray">
-                      Form: PERMANENT CHECKOUT
+                      Form: GENERAL INQUIRY
                     </p>
                   </div>
-                  <div className="text-4xl font-mono font-bold text-blueprint-navy">
-                    $12
+                  <div className="w-12 h-12 bg-blueprint-navy/10 flex items-center justify-center">
+                    <Send className="w-5 h-5 text-blueprint-navy" strokeWidth={1.5} />
                   </div>
                 </div>
 
-                {/* Checkout details */}
-                <div className="space-y-2 font-mono text-xs uppercase mb-8">
-                  <div className="flex justify-between">
-                    <span className="text-pencil-gray">Due Date:</span>
-                    <span className="font-semibold text-blueprint-navy">END OF SEMESTER</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-pencil-gray">Renewals:</span>
-                    <span className="font-semibold text-blueprint-navy">UNLIMITED</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-pencil-gray">Late Fees:</span>
-                    <span className="font-semibold text-blueprint-navy">NONE</span>
-                  </div>
-                </div>
-
-                {/* Email + CTA */}
+                {/* Contact form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
+                        placeholder="Your name"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
+                        placeholder="you@university.edu"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
-                      Email Address
+                      School (Optional)
                     </label>
                     <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
+                      type="text"
+                      name="school"
+                      value={formData.school}
+                      onChange={handleChange}
                       className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
-                      placeholder="you@university.edu"
+                      placeholder="University name"
                     />
                   </div>
+
+                  <div>
+                    <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                      Message
+                    </label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      required
+                      rows={4}
+                      className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors resize-none"
+                      placeholder="How can we help? Questions, feedback, or partnership inquiries..."
+                    />
+                  </div>
+
                   <button
                     type="submit"
                     className="w-full bg-blueprint-navy text-paper-cream font-condensed text-xs uppercase tracking-widest py-4 flex items-center justify-center gap-2 hover:bg-highlighter-yellow hover:text-blueprint-navy transition-colors"
                   >
-                    <CreditCard className="w-4 h-4" strokeWidth={1.5} />
-                    Purchase Access
+                    <Send className="w-4 h-4" strokeWidth={1.5} />
+                    Send Message
                   </button>
                 </form>
 
@@ -191,7 +266,7 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
           </p>
         </div>
 
-        {/* Technical drawing footer - from Stitch */}
+        {/* Technical drawing footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-paper-cream/10 mt-4">
           <div className="font-mono text-[8px] text-paper-cream/40 uppercase tracking-tighter">
             Drawing No. CALC-II-2024-REF // Technical Document // No. 0082-C2

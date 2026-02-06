@@ -1,7 +1,7 @@
 import { useRef, useLayoutEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ExternalLink, FileText } from 'lucide-react';
+import { ExternalLink, FileText, UserPlus } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,9 +27,16 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
   const previewRef = useRef<HTMLDivElement>(null);
   const [activeFilter, setActiveFilter] = useState('All');
 
-  const filteredCards = activeFilter === 'All' 
-    ? examCards 
+  const filteredCards = activeFilter === 'All'
+    ? examCards
     : examCards.filter(card => card.topic === activeFilter);
+
+  const scrollToSignUp = () => {
+    const el = document.getElementById('contact');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -211,6 +218,25 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
               <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.5} />
             </button>
           </div>
+        </div>
+
+        {/* Sign-up CTA Banner */}
+        <div className="mt-8 lg:mt-12 index-card p-6 lg:p-8 flex flex-col lg:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="font-serif font-semibold text-ink-black text-lg lg:text-xl mb-1">
+              Want to see full solutions?
+            </h3>
+            <p className="font-sans text-pencil-gray text-sm">
+              Sign up free to access step-by-step solutions for all 340+ problems.
+            </p>
+          </div>
+          <button
+            onClick={scrollToSignUp}
+            className="btn-blueprint inline-flex items-center gap-2 whitespace-nowrap"
+          >
+            <UserPlus className="w-4 h-4" strokeWidth={1.5} />
+            Sign Up Free
+          </button>
         </div>
       </div>
     </section>
