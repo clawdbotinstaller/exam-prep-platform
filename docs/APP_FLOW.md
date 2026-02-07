@@ -1,7 +1,7 @@
 # App Flow Document
 
-> **Last Updated:** 2026-02-06
-> **Status:** MVP Flow Updated (credits + archive + midterms)
+> **Last Updated:** 2026-02-07
+> **Status:** Unified Topic Analysis Hub Implemented
 
 ---
 
@@ -14,8 +14,7 @@
 | `/signup` | Signup | New user registration | No |
 | `/dashboard` | Dashboard | Course selection, credit balance | Yes |
 | `/course/calc2` | Course Home | Overview of Calc 2 prep | Yes |
-| `/course/:slug/analysis` | Exam Analysis | Topic breakdown (2 credits) | Yes |
-| `/course/:slug/analysis/:topicId` | Topic Deep Dive | Patterns, traps, study strategy | Yes |
+| `/course/:slug/analysis` | Topic Analysis Hub | Chapter → Section → Technique breakdown (2 credits) | Yes |
 | `/course/:slug/practice` | Practice Mode | Topic selection + questions | Yes |
 | `/course/:slug/archive` | Archive | Browse past exam questions | Yes |
 | `/course/:slug/archive/midterm/:difficulty` | Practice Midterm | Easy / sample / hard | Yes |
@@ -93,32 +92,59 @@ DASHBOARD (/dashboard)
 
 ---
 
-## User Flow 4: Analysis Page (2 Credits)
+## User Flow 4: Topic Analysis Hub (2 Credits)
 
 ```
 ANALYSIS PAGE (/course/calc2/analysis)
 ├── Header: Credit balance (deducted 2, now shows 3)
-├── Page title: "Calculus 2 Exam Analysis"
-├── Section 1: Topic Frequency
-│   ├── Bar chart: Integration (28%), Series (32%), Applications (22%), etc.
-│   └── Insight: "Series appears most often - prioritize this"
-├── Section 2: Topic Deep Dive (click a topic)
-│   ├── Most common question types for the topic
-│   ├── How often similar questions repeat across exams
-│   ├── Tricky steps / common mistakes
-│   └── Suggested study strategy
-├── Section 3: Difficulty Distribution
-│   ├── Pie/donut chart
-│   └── Easy 30%, Medium 45%, Hard 25%
-├── Section 4: High-Value Topics
-│   ├── Table: Topic | Avg Points | Frequency
-│   └── Highlight: "Integration by parts: 15 pts/question"
-├── Section 5: Study Strategy
-│   └── AI-generated: "Based on patterns, focus on..."
-└── CTA: "Practice These Topics" → PRACTICE PAGE (/course/calc2/practice)
+├── Page title: "Topic Analysis"
+├── Subtitle: "Based on MTH240 midterms from 2015-2025"
+├── Chapter 3: Integration (expandable card)
+│   ├── Header: Chapter number, name, total questions, exam frequency
+│   └── Sections (expandable):
+│       ├── 3.1 Integration by Parts
+│       │   ├── Stats: Question count, avg difficulty, avg time, frequency
+│       │   └── Techniques:
+│       │       ├── Integration by Parts (Basic)
+│       │       │   ├── Count: X questions from database
+│       │       │   ├── Time estimate: 6-10 minutes
+│       │       │   ├── [Details] → Expands to show:
+│       │       │   │   ├── Common Traps (from real exam analysis)
+│       │       │   │   │   ├── LIATE rule violations
+│       │       │   │   │   ├── Forgetting boundary terms
+│       │       │   │   │   └── Cyclical integration loops
+│       │       │   │   ├── Study Strategies
+│       │       │   │   │   ├── Always apply LIATE first
+│       │       │   │   │   ├── Check if u-sub simplifies first
+││   │   │   │   │   └── Tabular method for repeated integration
+│       │       │   │   └── Sample questions from actual exams
+│       │       │   └── [Practice This Technique] → Links to filtered practice
+│       │       └── Tabular Integration
+│       ├── 3.2 Trigonometric Integrals
+│       │   └── Techniques: sin/cos odd powers, tan/sec, reduction formulas
+│       ├── 3.3 Trigonometric Substitution
+│       │   └── Techniques: sqrt(a²-x²), sqrt(a²+x²), sqrt(x²-a²)
+│       ├── 3.4 Partial Fractions
+│       │   └── Techniques: Linear factors, repeated, irreducible quadratic
+│       └── 3.7 Improper Integrals
+│           └── Techniques: Infinite limits, discontinuities, comparison test
+│
+├── Chapter 4: Differential Equations (expandable card)
+│   ├── Header: Chapter number, name, total questions, exam frequency
+│   └── Sections:
+│       ├── 4.1 Directly Integrable DEs
+│       │   └── Techniques: Basic integration, initial value problems
+│       ├── 4.2 Separable DEs
+│       │   └── Techniques: Separation of variables, mixing problems
+│       └── 4.5 First-Order Linear DEs
+│           └── Techniques: Integrating factor, standard form setup
+│
+└── Study Tip Card
+    └── "Focus on high-frequency sections first (shown in navy blue)"
 ```
 
 **State Change:** Credits decremented immediately on page load (atomic)
+**Data Source:** All technique traps and strategies based on analysis of 33 real MTH240 exam questions (2015-2025)
 
 ---
 
@@ -127,20 +153,32 @@ ANALYSIS PAGE (/course/calc2/analysis)
 ```
 PRACTICE PAGE (/course/calc2/practice)
 ├── Header: Credit balance
-├── Step 1: Select Weak Topics
-│   ├── Checkbox list:
-│   │   ☑ Integration by parts
-│   │   ☐ Partial fractions
-│   │   ☑ Series convergence
-│   │   ☐ Polar coordinates
-│   └── Button: "Generate Questions"
-│       └── Check: Do they have credits?
-│           ├── YES → Generate questions
-│           └── NO → UPGRADE PAGE (/upgrade)
+├── Filter Banner (if technique param present):
+│   ├── "Filtered by: Integration by Parts"
+│   ├── Shows question count for this technique
+│   └── [Clear Filter] button
 │
-└── Step 2: Question View (QUESTION/:id) (/course/calc2/question/:id)
+├── Mode Selection:
+│   ├── Topic-based practice
+│   │   ├── Checkbox list:
+│   │   │   ☑ Integration by parts
+│   │   │   ☐ Partial fractions
+│   │   │   ☑ Series convergence
+│   │   │   ☐ Polar coordinates
+│   │   └── Button: "Generate Questions"
+│   │       └── Check: Do they have credits?
+│   │           ├── YES → Generate questions
+│   │           └── NO → UPGRADE PAGE (/upgrade)
+│   │
+│   └── Technique-based practice (from Analysis Hub)
+│       └── Direct link from Topic Analysis technique card
+│       └── URL: /course/calc2/practice?technique=integration_by_parts
+│       └── Filters questions to specific technique only
+│
+└── Question View (QUESTION/:id) (/course/calc2/question/:id)
     ├── Progress: "Question 1 of 3"
-    ├── Question text (AI-generated)
+    ├── Technique tag (if applicable)
+    ├── Question text
     ├── [Show Solution] button
     │   └── On click: Reveal step-by-step solution
     ├── Source citation: "Similar to 2023 Midterm, Q4 (12 pts)"
@@ -338,11 +376,20 @@ Track these user actions:
 
 ---
 
+## Recent Changes
+
+### 2026-02-07: Unified Topic Analysis Hub
+- **New:** Replaced split Analysis + Detail pages with unified hub at `/course/:slug/analysis`
+- **New:** Two-level nesting: Chapter → Section → Technique cards
+- **New:** 25+ techniques with curated traps and strategies from real exam analysis
+- **New:** Technique filtering in practice mode via URL param (`?technique=`)
+- **New:** Sample questions per technique from actual MTH240 exams (2015-2025)
+- **Data:** All content based on analysis of 33 real exam questions
+
 ## Open Questions
 
-1. Should we show a preview/teaser of analysis before paying 2 credits?
-2. Should incorrect answers cost credits, or only viewing solution?
-3. Do unlimited users see any "credit" UI or is it hidden?
-4. Should there be a daily login bonus (1 free credit)?
+1. Do unlimited users see any "credit" UI or is it hidden?
+2. Should there be a daily login bonus (1 free credit)?
+3. Should we add more chapters (5, 6, 7) as content expands?
 
-**Next Step:** User psychology research will inform these decisions.
+**Next Step:** Deploy and verify full flow: Analysis → Expand → Practice

@@ -1,6 +1,6 @@
 # Backend (Implemented vs Planned)
 
-> **Last Updated:** 2026-02-06
+> **Last Updated:** 2026-02-07
 > **Runtime:** Cloudflare Workers (Hono)
 > **Database:** Cloudflare D1 (SQLite)
 
@@ -177,18 +177,26 @@ CREATE INDEX IF NOT EXISTS idx_questions_course ON questions(course_id);
 
 **Courses**
 - `GET /api/courses`
-
-**Topics**
+- `GET /api/courses/:id/stats`
+- `GET /api/courses/:id/exams`
 - `GET /api/courses/:id/topics`
+- `GET /api/courses/:id/topics/public`
 
 **Analysis**
 - `GET /api/courses/:id/analysis` (costs 2 credits)
+- `GET /api/courses/:id/analysis-detailed` (costs 2 credits) - **NEW: Unified topic analysis hub**
 
 **Questions**
 - `GET /api/questions` (browse)
 - `GET /api/questions/:id` (single question)
-- `POST /api/questions/practice` (cost per question)
+- `POST /api/questions/practice` (cost per question, supports technique filtering)
 - `POST /api/questions/bundle` (3 questions for 1 credit)
+
+**Exams**
+- `GET /api/exams/:examId/questions`
+
+**Public**
+- `GET /api/featured-question` (no auth required)
 
 **Midterm**
 - `POST /api/midterm/generate` (costs 3 credits)
