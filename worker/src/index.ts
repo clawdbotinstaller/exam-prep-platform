@@ -84,13 +84,13 @@ const verifyPassword = async (password: string, stored: string) => {
 const ensureMonthlyCredits = async (db: D1Database, userId: string) => {
   const user = await db.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first<any>();
   if (!user) return null;
-  if (user.plan === 'unlimited') return user;
+  if (user.has_unlimited) return user;
 
   const resetAt = user.credits_reset_at ?? 0;
   if (resetAt && resetAt > nowTs()) return user;
 
   const nextReset = nowTs() + 30 * 24 * 3600;
-  const monthlyCredits = user.monthly_credits ?? (user.plan === 'starter' ? 15 : 5);
+  const monthlyCredits = 5;
   await db
     .prepare('UPDATE users SET credits = ?, credits_reset_at = ? WHERE id = ?')
     .bind(monthlyCredits, nextReset, userId)
