@@ -518,7 +518,12 @@ app.get('/api/credits/balance', requireAuth, async (c) => {
   const userId = c.get('userId');
   const user = await ensureMonthlyCredits(c.env.DB, userId);
   if (!user) return c.json({ error: 'Not found' }, 404);
-  return c.json({ credits: user.credits, plan: user.plan, credits_reset_at: user.credits_reset_at });
+  return c.json({
+    credits: user.credits,
+    has_unlimited: user.has_unlimited,
+    unlimited_until: user.unlimited_until,
+    credits_reset_at: user.credits_reset_at
+  });
 });
 
 app.post('/api/credits/purchase', requireAuth, async (c) => {
