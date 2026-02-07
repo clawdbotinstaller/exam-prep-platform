@@ -10,6 +10,7 @@ type Bindings = {
   JWT_SECRET: string;
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
+  ASSETS: Fetcher;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -24,8 +25,8 @@ app.use('*', cors({
   credentials: true,
 }));
 
-// Health check
-app.get('/', (c) => {
+// Health check (API only)
+app.get('/api/health', (c) => {
   return c.json({
     name: 'Arkived API',
     version: '1.0.0',
@@ -1128,9 +1129,30 @@ app.get('/api/courses/:id/topics/public', async (c) => {
   return c.json({ topics: topics.results ?? [] });
 });
 
-// 404 handler
-app.notFound((c) => {
-  return c.json({ error: 'Not Found' }, 404);
+// Static file serving - serve frontend for all non-API routes
+app.get('*', async (c) => {
+  const path = c.req.path;
+
+  // Don't serve static files for API routes
+  if (path.startsWith('/api/')) {
+    return c.json({ error: 'Not Found' }, 404);
+  }
+
+  try {
+    // Try to serve the requested file from ASSETS
+    const assetResponse = await c.env.ASSETS.fetch(c.req.raw);
+
+    if (assetResponse.status === 200) {
+      return assetResponse;
+    }
+
+    // If file not found, serve index.html for SPA routing
+    const indexResponse = await c.env.ASSETS.fetch(new Request('/index.html'));
+    return indexResponse;
+  } catch (error) {
+    console.error('Static file serving error:', error);
+    return c.json({ error: 'Not Found' }, 404);
+  }
 });
 
 // Error handler

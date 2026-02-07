@@ -10,5 +10,10 @@ binding = "DB"
 database_name = "testament-db"
 database_id = "86dbdef7-520c-49a7-b02e-563b3175a6b4"
 
+# Static assets binding for serving frontend
+[[assets]]
+binding = "ASSETS"
+directory = "./public"
+
 [build]
 command = ""
