@@ -35,7 +35,7 @@ app.get('/api/health', (c) => {
   });
 });
 
-// Public topics list for landing page (no auth required)
+// Public topics list for landing page (no auth required) - only topics with questions
 app.get('/api/topics', async (c) => {
   const topics = await c.env.DB.prepare(`
     SELECT t.*, COUNT(q.id) as question_count
@@ -43,7 +43,8 @@ app.get('/api/topics', async (c) => {
     LEFT JOIN questions q ON t.id = q.topic_id
     WHERE t.course_id = 'calc2'
     GROUP BY t.id
-    ORDER BY t.frequency_score DESC
+    HAVING COUNT(q.id) > 0
+    ORDER BY COUNT(q.id) DESC
   `).all();
 
   return c.json({ topics: topics.results ?? [] });
@@ -88,6 +89,9 @@ app.get('/api/topics/:topicId/public', async (c) => {
   // Get frequency stats
   const topicAppearances = await db.prepare('SELECT COUNT(*) as count FROM questions WHERE topic_id = ?').bind(topicId).first<{ count: number }>();
 
+  // Get total unique exams count
+  const totalExamsResult = await db.prepare('SELECT COUNT(DISTINCT exam_id) as count FROM questions WHERE course_id = ?').bind(topic.course_id).first<{ count: number }>();
+
   // Calculate average difficulty and points
   const stats = await db.prepare(`
     SELECT AVG(difficulty) as avg_difficulty, AVG(points) as avg_points
@@ -98,6 +102,7 @@ app.get('/api/topics/:topicId/public', async (c) => {
     topic: {
       ...topic,
       appearances: topicAppearances?.count ?? 0,
+      totalExams: totalExamsResult?.count ?? 5,
       avgDifficulty: Math.round(stats?.avg_difficulty ?? 3),
       avgPoints: Math.round(stats?.avg_points ?? 10),
     },
@@ -853,6 +858,7 @@ app.get('/api/courses/:id/analysis-detailed', requireAuth, async (c) => {
 });
 
 // Public topics list (no auth) - MUST be before /api/courses/:id/topics
+// Only returns topics that have questions
 app.get('/api/courses/:id/topics/public', async (c) => {
   const courseId = c.req.param('id');
   const topics = await c.env.DB.prepare(`
@@ -861,7 +867,8 @@ app.get('/api/courses/:id/topics/public', async (c) => {
     LEFT JOIN questions q ON t.id = q.topic_id
     WHERE t.course_id = ?
     GROUP BY t.id
-    ORDER BY t.frequency_score DESC
+    HAVING COUNT(q.id) > 0
+    ORDER BY COUNT(q.id) DESC
   `).bind(courseId).all();
 
   return c.json({ topics: topics.results ?? [] });

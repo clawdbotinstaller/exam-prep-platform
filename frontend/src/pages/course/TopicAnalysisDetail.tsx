@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, BookOpen, Lightbulb, Target, Clock, BarChart3, ChevronRight, Lock } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BookOpen, Lightbulb, Target, Clock, BarChart3, ChevronRight } from 'lucide-react';
 import { API_URL } from '../../lib/api';
 
 interface SampleQuestion {
@@ -45,15 +45,7 @@ export default function TopicAnalysisDetail() {
     const load = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/api/courses/${slug}/topics/${topicId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('session')}` },
-        });
-
-        if (response.status === 402) {
-          setError('credits');
-          setLoading(false);
-          return;
-        }
+        const response = await fetch(`${API_URL}/api/topics/${topicId}/public`);
 
         if (!response.ok) {
           setError('load');
@@ -63,7 +55,7 @@ export default function TopicAnalysisDetail() {
 
         const data = await response.json();
         setTopic(data.topic);
-        setSampleQuestions(data.sampleQuestions ?? []);
+        setSampleQuestions(data.questions ?? []);
         setAnalysis(data.analysis);
         setLoading(false);
       } catch (err) {
@@ -116,30 +108,6 @@ export default function TopicAnalysisDetail() {
           <div className="h-4 bg-pencil-gray/20 w-32"></div>
           <div className="h-8 bg-pencil-gray/20 w-2/3"></div>
           <div className="h-64 bg-pencil-gray/20 mt-8"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error === 'credits') {
-    return (
-      <div className="p-8 lg:p-12">
-        <div className="max-w-2xl mx-auto text-center py-16">
-          <div className="w-16 h-16 bg-blueprint-navy/10 flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-8 h-8 text-blueprint-navy" />
-          </div>
-          <h2 className="font-serif font-semibold text-ink-black text-2xl mb-4">
-            Topic Analysis Locked
-          </h2>
-          <p className="font-sans text-pencil-gray mb-8 max-w-md mx-auto">
-            Get detailed breakdowns for each topic including common question types, study strategies, and sample problems.
-          </p>
-          <button
-            onClick={() => navigate('/upgrade')}
-            className="btn-blueprint"
-          >
-            Unlock Full Analysis
-          </button>
         </div>
       </div>
     );
