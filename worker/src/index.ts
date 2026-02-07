@@ -96,11 +96,6 @@ const ensureMonthlyCredits = async (db: D1Database, userId: string) => {
     .bind(monthlyCredits, nextReset, userId)
     .run();
 
-  await db
-    .prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-    .bind(crypto.randomUUID(), userId, monthlyCredits, 'monthly_refresh', 'Monthly credit refresh', nowTs())
-    .run();
-
   return { ...user, credits: monthlyCredits, credits_reset_at: nextReset };
 };
 
