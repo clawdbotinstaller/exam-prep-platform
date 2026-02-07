@@ -882,31 +882,126 @@ app.get('/api/questions/:id', requireAuth, async (c) => {
   return c.json({ question: q });
 });
 
-// Practice midterm (3 credits)
+// Practice midterm with configurable weights
 app.post('/api/midterm/generate', requireAuth, async (c) => {
-  const body = await json<{ course_id?: string; difficulty?: 'easy' | 'sample' | 'hard' }>(c);
-  if (!body.course_id || !body.difficulty) return c.json({ error: 'Missing fields' }, 400);
+  const body = await json<{
+    course_id?: string;
+    difficulty?: 'easy' | 'sample' | 'hard';
+    config?: {
+      id: string;
+      name: string;
+      weights: { recency: number; repetition: number; coverage: number; difficulty: number };
+      difficultyDistribution: { easy: number; medium: number; hard: number };
+      questionCount: number;
+      creditCost: number;
+    };
+  }>(c);
+
+  if (!body.course_id) return c.json({ error: 'Missing course_id' }, 400);
+
+  // Support both old difficulty param and new config param
+  const config = body.config;
+  const creditCost = config?.creditCost || (body.difficulty === 'easy' ? 2 : body.difficulty === 'hard' ? 3 : 3);
+  const questionCount = config?.questionCount || (body.difficulty === 'easy' ? 6 : body.difficulty === 'hard' ? 10 : 8);
 
   const userId = c.get('userId');
   const user = await ensureMonthlyCredits(c.env.DB, userId);
   if (!user) return c.json({ error: 'Not found' }, 404);
-  if (user.plan !== 'unlimited' && user.credits < 3) {
-    return c.json({ error: 'Insufficient credits', credits_needed: 3, credits_available: user.credits }, 402);
+  if (user.plan !== 'unlimited' && user.credits < creditCost) {
+    return c.json({ error: 'Insufficient credits', credits_needed: creditCost, credits_available: user.credits }, 402);
   }
 
+  // Deduct credits
   if (user.plan !== 'unlimited') {
-    await c.env.DB.prepare('UPDATE users SET credits = credits - 3 WHERE id = ?').bind(userId).run();
+    await c.env.DB.prepare('UPDATE users SET credits = credits - ? WHERE id = ?').bind(creditCost, userId).run();
     await c.env.DB.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(crypto.randomUUID(), userId, -3, 'question_view', `Midterm ${body.difficulty}`, nowTs())
+      .bind(crypto.randomUUID(), userId, -creditCost, 'midterm', config?.name || `Midterm ${body.difficulty || 'custom'}`, nowTs())
       .run();
   }
 
-  const limit = body.difficulty === 'easy' ? 6 : body.difficulty === 'hard' ? 10 : 8;
-  const questions = await c.env.DB
-    .prepare('SELECT q.*, t.name as topic_name FROM questions q LEFT JOIN topics t ON q.topic_id = t.id WHERE q.course_id = ? ORDER BY difficulty DESC LIMIT ?')
-    .bind(body.course_id, limit)
+  // Build difficulty range from distribution
+  let minDifficulty = 1, maxDifficulty = 5;
+  if (config?.difficultyDistribution) {
+    const { easy, medium, hard } = config.difficultyDistribution;
+    // Weighted selection based on distribution
+    const rand = Math.random() * 100;
+    if (rand < easy) { minDifficulty = 1; maxDifficulty = 2; }
+    else if (rand < easy + medium) { minDifficulty = 3; maxDifficulty = 3; }
+    else { minDifficulty = 4; maxDifficulty = 5; }
+  } else if (body.difficulty) {
+    if (body.difficulty === 'easy') { minDifficulty = 1; maxDifficulty = 3; }
+    else if (body.difficulty === 'hard') { minDifficulty = 4; maxDifficulty = 5; }
+    else { minDifficulty = 2; maxDifficulty = 4; }
+  }
+
+  // Fetch questions with weighted selection
+  const allQuestions = await c.env.DB
+    .prepare('SELECT q.*, t.name as topic_name FROM questions q LEFT JOIN topics t ON q.topic_id = t.id WHERE q.course_id = ? AND q.difficulty >= ? AND q.difficulty <= ? ORDER BY RANDOM()')
+    .bind(body.course_id, minDifficulty, maxDifficulty)
     .all();
-  return c.json({ questions: questions.results ?? [], difficulty: body.difficulty });
+
+  // Apply weighted scoring if config provided
+  let selectedQuestions = (allQuestions.results || []) as any[];
+
+  if (config?.weights) {
+    // Calculate scores based on weights
+    const scored = selectedQuestions.map(q => {
+      let score = 0;
+      const year = q.source_exam_year || 2015;
+
+      // Recency score (0-100)
+      if (year >= 2024) score += config.weights.recency * 1.0;
+      else if (year >= 2020) score += config.weights.recency * 0.5;
+      else score += config.weights.recency * 0.25;
+
+      // Repetition score - questions with canonical forms that appear similar
+      if (q.canonical_form && q.canonical_form.length > 10) {
+        score += config.weights.repetition * 0.7;
+      }
+
+      // Coverage score - will be handled by section guarantee
+      score += config.weights.coverage * 0.5;
+
+      // Difficulty score - how close to target
+      const diffDiff = Math.abs(q.difficulty - (minDifficulty + maxDifficulty) / 2);
+      score += config.weights.difficulty * (1 - diffDiff / 5);
+
+      return { ...q, _score: score };
+    });
+
+    // Sort by score and select top questions
+    scored.sort((a, b) => b._score - a._score);
+    selectedQuestions = scored.slice(0, questionCount);
+  } else {
+    // Simple limit without scoring
+    selectedQuestions = selectedQuestions.slice(0, questionCount);
+  }
+
+  // Generate midterm ID
+  const midtermId = crypto.randomUUID();
+
+  // Save to user_midterms if table exists (optional persistence)
+  try {
+    await c.env.DB.prepare(
+      'INSERT INTO user_midterms (id, user_id, template_type, question_ids, status, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      midtermId,
+      userId,
+      config?.id || body.difficulty || 'custom',
+      JSON.stringify(selectedQuestions.map(q => q.id)),
+      'in_progress',
+      nowTs()
+    ).run();
+  } catch {
+    // Table might not exist yet, continue without saving
+  }
+
+  return c.json({
+    midterm_id: midtermId,
+    questions: selectedQuestions,
+    config: config || { id: body.difficulty || 'custom', name: body.difficulty || 'Custom' },
+    credits_remaining: user.plan === 'unlimited' ? null : user.credits - creditCost,
+  });
 });
 
 // Public featured question (no auth required)
