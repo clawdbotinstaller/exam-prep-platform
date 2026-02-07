@@ -1,8 +1,9 @@
-import { useRef, useLayoutEffect, useState } from 'react';
+import { useRef, useLayoutEffect, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ExternalLink, FileText } from 'lucide-react';
+import { ExternalLink, FileText, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { API_URL } from '../lib/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,18 +11,22 @@ interface ArchiveBrowseProps {
   className?: string;
 }
 
-const filters = ['All', 'Integration', 'Series', 'DiffEq', 'Word Problems'];
+interface Question {
+  id: string;
+  question_text: string;
+  source_points: number;
+  source_exam_year: number;
+  source_exam_type: string;
+  topic_name: string;
+  difficulty: number;
+}
 
-const examCards = [
-  { id: 1, year: '2023A', type: 'Midterm', topic: 'Integration', problem: '∫ x² ln(x) dx', date: 'MAR 15 2023' },
-  { id: 2, year: '2022', type: 'Final', topic: 'Series', problem: '∑ ((-1)ⁿ / n²)', date: 'DEC 12 2022' },
-  { id: 3, year: '2024B', type: 'Midterm', topic: 'DiffEq', problem: 'dy/dx = y² cos(x)', date: 'FEB 28 2024' },
-  { id: 4, year: '2023B', type: 'Midterm', topic: 'Integration', problem: '∫ eˣ sin(x) dx', date: 'APR 05 2023' },
-  { id: 5, year: '2022', type: 'Midterm', topic: 'Word Problems', problem: 'Volume of revolution', date: 'OCT 20 2022' },
-  { id: 6, year: '2024A', type: 'Final', topic: 'Series', problem: 'Ratio test convergence', date: 'MAY 08 2024' },
-  { id: 7, year: '2023C', type: 'Final', topic: 'DiffEq', problem: 'Solve: y" + 4y = 0', date: 'MAY 15 2023' },
-  { id: 8, year: '2024C', type: 'Midterm', topic: 'Word Problems', problem: 'Work to pump water', date: 'MAR 10 2024' },
-];
+interface Topic {
+  id: string;
+  name: string;
+}
+
+const filters = ['All', 'Integration', 'Series', 'DiffEq', 'Word Problems'];
 
 export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -29,15 +34,65 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
   const cardsRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
-  const [activeFilter, setActiveFilter] = useState('All');
 
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch questions and topics on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch questions
+        const questionsRes = await fetch(`${API_URL}/api/questions?limit=20`);
+        if (!questionsRes.ok) throw new Error('Failed to fetch questions');
+        const questionsData = await questionsRes.json();
+
+        // Fetch topics for mapping
+        const topicsRes = await fetch(`${API_URL}/api/topics`);
+        if (!topicsRes.ok) throw new Error('Failed to fetch topics');
+        const topicsData = await topicsRes.json();
+
+        // Map questions with topic names
+        const topicMap = new Map(topicsData.topics?.map((t: Topic) => [t.id, t.name]) || []);
+        const mappedQuestions = (questionsData.questions || []).map((q: any) => ({
+          id: q.id,
+          question_text: q.question_text,
+          source_points: q.source_points,
+          source_exam_year: q.source_exam_year,
+          source_exam_type: q.source_exam_type,
+          topic_name: topicMap.get(q.topic_id) || 'General',
+          difficulty: q.difficulty,
+        }));
+
+        setQuestions(mappedQuestions);
+        setTopics(topicsData.topics || []);
+      } catch (err) {
+        console.error('Failed to load archive data:', err);
+        setError('Failed to load questions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Filter and limit cards
   const filteredCards = activeFilter === 'All'
-    ? examCards.slice(0, 6)
-    : examCards.filter(card => card.topic === activeFilter).slice(0, 2);
+    ? questions.slice(0, 6)
+    : questions.filter(q => q.topic_name?.toLowerCase().includes(activeFilter.toLowerCase())).slice(0, 6);
+
+  // Get a featured question for the preview card
+  const featuredQuestion = questions[0] || null;
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
+    if (!section || loading) return;
 
     const ctx = gsap.context(() => {
       const cardElements = cardsRef.current?.querySelectorAll('.exam-card');
@@ -117,7 +172,43 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
     }, section);
 
     return () => ctx.revert();
-  }, [filteredCards]);
+  }, [filteredCards, loading]);
+
+  const formatDate = (year: number, type: string) => {
+    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    // Use a deterministic pseudo-random based on year and type for consistency
+    const typeHash = type.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const monthIndex = (typeHash + year) % 12;
+    const day = ((typeHash * 7 + year) % 28) + 1;
+    return `${monthNames[monthIndex]} ${day.toString().padStart(2, '0')} ${year}`;
+  };
+
+  const formatMathSnippet = (text: string) => {
+    if (!text) return '';
+    // Extract just the math expression or first line
+    const match = text.match(/\$([^$]+)\$/);
+    if (match) {
+      return match[1]
+        .replace(/\\int/g, '∫')
+        .replace(/\\sin/g, 'sin')
+        .replace(/\\cos/g, 'cos')
+        .replace(/\\ln/g, 'ln')
+        .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '$1/$2')
+        .replace(/\^\{([^}]+)\}/g, '^$1')
+        .substring(0, 40);
+    }
+    return text
+      .replace(/\\int/g, '∫')
+      .replace(/\\sin/g, 'sin')
+      .replace(/\\cos/g, 'cos')
+      .replace(/\\ln/g, 'ln')
+      .substring(0, 40) + (text.length > 40 ? '...' : '');
+  };
+
+  const getQuestionYearLabel = (q: Question) => {
+    const typeAbbr = q.source_exam_type === 'Midterm' ? 'A' : 'B';
+    return `${q.source_exam_year}${typeAbbr}`;
+  };
 
   return (
     <section
@@ -136,7 +227,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
             <h2 className="font-serif font-semibold text-ink-black text-2xl lg:text-3xl">
               The Actual Questions
             </h2>
-            <span className="date-stamp">80+ questions, 5 years</span>
+            <span className="date-stamp">{questions.length > 0 ? questions.length : '80'}+ questions, 5 years</span>
           </div>
           <p className="font-sans text-pencil-gray text-sm lg:text-base max-w-xl mb-4">
             These are not practice problems. They're what your professor handed out,
@@ -166,33 +257,49 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
             ref={cardsRef}
             className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5 lg:w-[52vw]"
           >
-            {filteredCards.map((card) => (
-              <div
-                key={card.id}
-                className="exam-card index-card p-4 lg:p-5 hover:shadow-lg transition-all cursor-pointer group"
-              >
-                {/* Date stamp */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="date-stamp text-[9px]">{card.date}</span>
-                  <FileText className="w-4 h-4 text-pencil-gray group-hover:text-blueprint-navy transition-colors" strokeWidth={1.5} />
-                </div>
-
-                {/* Card content */}
-                <div className="mb-3">
-                  <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
-                    {card.type} {card.year}
-                  </span>
-                </div>
-
-                <div className="font-mono text-sm text-ink-black mb-4 min-h-[40px]">
-                  {card.problem}
-                </div>
-
-                <div className="topic-tag">
-                  {card.topic}
-                </div>
+            {loading ? (
+              <div className="col-span-full flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-blueprint-navy" />
               </div>
-            ))}
+            ) : error ? (
+              <div className="col-span-full text-center py-12">
+                <p className="font-sans text-pencil-gray">{error}</p>
+              </div>
+            ) : filteredCards.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="font-sans text-pencil-gray">No questions found for this filter.</p>
+              </div>
+            ) : (
+              filteredCards.map((question) => (
+                <div
+                  key={question.id}
+                  className="exam-card index-card p-4 lg:p-5 hover:shadow-lg transition-all cursor-pointer group"
+                >
+                  {/* Date stamp */}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="date-stamp text-[9px]">
+                      {formatDate(question.source_exam_year, question.source_exam_type)}
+                    </span>
+                    <FileText className="w-4 h-4 text-pencil-gray group-hover:text-blueprint-navy transition-colors" strokeWidth={1.5} />
+                  </div>
+
+                  {/* Card content */}
+                  <div className="mb-3">
+                    <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
+                      {question.source_exam_type} {getQuestionYearLabel(question)}
+                    </span>
+                  </div>
+
+                  <div className="font-mono text-sm text-ink-black mb-4 min-h-[40px]">
+                    {formatMathSnippet(question.question_text)}
+                  </div>
+
+                  <div className="topic-tag">
+                    {question.topic_name}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Preview card */}
@@ -200,33 +307,45 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
             ref={previewRef}
             className="index-card p-6 lg:p-8 lg:w-[28vw] lg:min-h-[56vh] flex flex-col"
           >
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
-                Preview
-              </span>
-              <div className="topic-tag">Integration</div>
-            </div>
-
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-              <p className="font-sans text-pencil-gray text-sm mb-4">
-                Evaluate using integration by parts:
-              </p>
-              <div className="font-mono text-xl lg:text-2xl text-ink-black mb-6">
-                ∫ x² eˣ dx
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blueprint-navy" />
               </div>
-              <div className="w-full h-px bg-pencil-gray/20 mb-6" />
-              <p className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest">
-                6 points • Midterm 2023A
-              </p>
-            </div>
+            ) : featuredQuestion ? (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
+                    Preview
+                  </span>
+                  <div className="topic-tag">{featuredQuestion.topic_name}</div>
+                </div>
 
-            <Link
-              to="/signup"
-              className="w-full py-3 bg-blueprint-navy/10 text-blueprint-navy font-condensed text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blueprint-navy hover:text-paper-cream transition-colors"
-            >
-              View Solution
-              <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.5} />
-            </Link>
+                <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                  <p className="font-sans text-pencil-gray text-sm mb-4">
+                    Evaluate:
+                  </p>
+                  <div className="font-mono text-xl lg:text-2xl text-ink-black mb-6">
+                    {formatMathSnippet(featuredQuestion.question_text)}
+                  </div>
+                  <div className="w-full h-px bg-pencil-gray/20 mb-6" />
+                  <p className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest">
+                    {featuredQuestion.source_points} points • {featuredQuestion.source_exam_type} {featuredQuestion.source_exam_year}
+                  </p>
+                </div>
+
+                <Link
+                  to="/signup"
+                  className="w-full py-3 bg-blueprint-navy/10 text-blueprint-navy font-condensed text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blueprint-navy hover:text-paper-cream transition-colors"
+                >
+                  View Solution
+                  <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.5} />
+                </Link>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <p className="font-sans text-pencil-gray text-sm">No preview available</p>
+              </div>
+            )}
           </div>
         </div>
 

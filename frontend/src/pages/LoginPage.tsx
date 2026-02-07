@@ -8,6 +8,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,6 +24,19 @@ export default function LoginPage() {
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
+      if (err instanceof Error) {
+        const statusMatch = err.message.match(/Request failed: (\d+)/);
+        const status = statusMatch ? parseInt(statusMatch[1], 10) : null;
+        if (status === 401) {
+          setError('Invalid email or password');
+        } else if (status === 400) {
+          setError('Please fill in all fields');
+        } else {
+          setError('Something went wrong. Please try again.');
+        }
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
       setIsSubmitting(false);
     }
   };
@@ -47,7 +61,10 @@ export default function LoginPage() {
             type="email"
             required
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) => {
+              setFormData({ ...formData, email: e.target.value });
+              setError(null);
+            }}
             className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
             placeholder="you@university.edu"
           />
@@ -62,7 +79,10 @@ export default function LoginPage() {
               type={showPassword ? 'text' : 'password'}
               required
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, password: e.target.value });
+                setError(null);
+              }}
               className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors pr-10"
               placeholder="Enter your password"
             />
@@ -83,6 +103,12 @@ export default function LoginPage() {
           </label>
           <span className="font-sans text-blueprint-navy text-sm">Forgot password?</span>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-sm px-4 py-3 text-red-700 text-sm font-sans">
+            {error}
+          </div>
+        )}
 
         <button
           type="submit"

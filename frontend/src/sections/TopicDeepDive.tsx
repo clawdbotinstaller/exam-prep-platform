@@ -21,7 +21,7 @@ interface QuickQuestion {
 interface ExamQuestion {
   id: string;
   question_text: string;
-  points: number;
+  source_points: number;
   difficulty: number;
   source_exam_year: number;
   source_exam_type: string;
@@ -71,7 +71,7 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
         setExamQuestion({
           id: 'exam-fallback',
           question_text: 'Consider the region bounded by y = \\sqrt{x}, y = 0, and x = 4.',
-          points: 10,
+          source_points: 10,
           difficulty: 4,
           source_exam_year: 2023,
           source_exam_type: 'Final',
@@ -286,7 +286,7 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
                     <span className="date-stamp text-[9px]">
                       {examQuestion?.source_exam_type || 'Final'} {examQuestion?.source_exam_year || '2023'}
                     </span>
-                    <span className="font-mono text-xs text-pencil-gray">{examQuestion?.points || 10} pts</span>
+                    <span className="font-mono text-xs text-pencil-gray">{examQuestion?.source_points || 10} pts</span>
                   </div>
                 </div>
 

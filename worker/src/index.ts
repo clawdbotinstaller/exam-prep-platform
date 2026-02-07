@@ -134,8 +134,6 @@ app.post('/init', async (c) => {
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         credits INTEGER DEFAULT 5,
-        plan TEXT DEFAULT 'free',
-        monthly_credits INTEGER DEFAULT 5,
         credits_reset_at INTEGER,
         stripe_customer_id TEXT,
         stripe_subscription_id TEXT,
@@ -228,8 +226,6 @@ app.post('/init', async (c) => {
 
     // Backfill columns for existing tables (safe on fresh DB)
     await addColumn('users', 'name TEXT');
-    await addColumn('users', 'plan TEXT DEFAULT \"free\"');
-    await addColumn('users', 'monthly_credits INTEGER DEFAULT 5');
     await addColumn('users', 'credits_reset_at INTEGER');
     await addColumn('users', 'stripe_customer_id TEXT');
     await addColumn('users', 'stripe_subscription_id TEXT');
@@ -544,11 +540,11 @@ app.get('/api/courses/:id/analysis', requireAuth, async (c) => {
   const user = await ensureMonthlyCredits(c.env.DB, userId);
   if (!user) return c.json({ error: 'Not found' }, 404);
 
-  if (user.plan !== 'unlimited' && user.credits < 2) {
+  if (!user.has_unlimited && user.credits < 2) {
     return c.json({ error: 'Insufficient credits', credits_needed: 2, credits_available: user.credits }, 402);
   }
 
-  if (user.plan !== 'unlimited') {
+  if (!user.has_unlimited) {
     await c.env.DB.prepare('UPDATE users SET credits = credits - 2 WHERE id = ?').bind(userId).run();
     await c.env.DB.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, -2, 'analysis_view', 'Exam analysis', nowTs())
@@ -556,7 +552,7 @@ app.get('/api/courses/:id/analysis', requireAuth, async (c) => {
   }
 
   return c.json({
-    credits_deducted: user.plan === 'unlimited' ? 0 : 2,
+    credits_deducted: user.has_unlimited ? 0 : 2,
     analysis: {
       topic_distribution: [
         { topic_id: 'series', name: 'Sequences & Series', count: 5, percentage: 32, avg_points: 15 },
@@ -580,12 +576,12 @@ app.get('/api/courses/:id/analysis-detailed', requireAuth, async (c) => {
   if (!user) return c.json({ error: 'Not found' }, 404);
 
   // Check credits
-  if (user.plan !== 'unlimited' && user.credits < 2) {
+  if (!user.has_unlimited && user.credits < 2) {
     return c.json({ error: 'Insufficient credits', credits_needed: 2, credits_available: user.credits }, 402);
   }
 
   // Deduct credits (idempotent check would need session tracking - simplified here)
-  if (user.plan !== 'unlimited') {
+  if (!user.has_unlimited) {
     await db.prepare('UPDATE users SET credits = credits - 2 WHERE id = ?').bind(userId).run();
     await db.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, -2, 'analysis_detailed', 'Detailed topic analysis', nowTs())
@@ -753,7 +749,7 @@ app.get('/api/courses/:id/analysis-detailed', requireAuth, async (c) => {
     }
 
     return c.json({
-      credits_deducted: user.plan === 'unlimited' ? 0 : 2,
+      credits_deducted: user.has_unlimited ? 0 : 2,
       chapters: chapters,
     });
   } catch (error) {
@@ -831,11 +827,11 @@ app.post('/api/questions/bundle', requireAuth, async (c) => {
   const user = await ensureMonthlyCredits(c.env.DB, userId);
   if (!user) return c.json({ error: 'Not found' }, 404);
 
-  if (user.plan !== 'unlimited' && user.credits < 1) {
+  if (!user.has_unlimited && user.credits < 1) {
     return c.json({ error: 'Insufficient credits', credits_needed: 1, credits_available: user.credits }, 402);
   }
 
-  if (user.plan !== 'unlimited') {
+  if (!user.has_unlimited) {
     await c.env.DB.prepare('UPDATE users SET credits = credits - 1 WHERE id = ?').bind(userId).run();
     await c.env.DB.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, -1, 'question_view', 'Topic bundle', nowTs())
@@ -863,11 +859,11 @@ app.post('/api/questions/practice', requireAuth, async (c) => {
   const user = await ensureMonthlyCredits(c.env.DB, userId);
   if (!user) return c.json({ error: 'Not found' }, 404);
 
-  if (user.plan !== 'unlimited' && user.credits < count) {
+  if (!user.has_unlimited && user.credits < count) {
     return c.json({ error: 'Insufficient credits', credits_needed: count, credits_available: user.credits }, 402);
   }
 
-  if (user.plan !== 'unlimited') {
+  if (!user.has_unlimited) {
     await c.env.DB.prepare('UPDATE users SET credits = credits - ? WHERE id = ?').bind(count, userId).run();
     await c.env.DB.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, -count, 'question_view', 'Practice questions', nowTs())
@@ -931,20 +927,8 @@ app.get('/api/questions/:id', requireAuth, async (c) => {
 
 // Practice midterm with configurable weights
 app.post('/api/midterm/generate', requireAuth, async (c) => {
-  const body = await json<{
-    course_id?: string;
-    difficulty?: 'easy' | 'sample' | 'hard';
-    config?: {
-      id: string;
-      name: string;
-      weights: { recency: number; repetition: number; coverage: number; difficulty: number };
-      difficultyDistribution: { easy: number; medium: number; hard: number };
-      questionCount: number;
-      creditCost: number;
-    };
-  }>(c);
-
-  if (!body.course_id) return c.json({ error: 'Missing course_id' }, 400);
+  const body = await json<any>(c);
+  const courseId = body.course_id || 'calc2';
 
   // Support both old difficulty param and new config param
   const config = body.config;
@@ -954,12 +938,12 @@ app.post('/api/midterm/generate', requireAuth, async (c) => {
   const userId = c.get('userId');
   const user = await ensureMonthlyCredits(c.env.DB, userId);
   if (!user) return c.json({ error: 'Not found' }, 404);
-  if (user.plan !== 'unlimited' && user.credits < creditCost) {
+  if (!user.has_unlimited && user.credits < creditCost) {
     return c.json({ error: 'Insufficient credits', credits_needed: creditCost, credits_available: user.credits }, 402);
   }
 
   // Deduct credits
-  if (user.plan !== 'unlimited') {
+  if (!user.has_unlimited) {
     await c.env.DB.prepare('UPDATE users SET credits = credits - ? WHERE id = ?').bind(creditCost, userId).run();
     await c.env.DB.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, -creditCost, 'midterm', config?.name || `Midterm ${body.difficulty || 'custom'}`, nowTs())
@@ -984,7 +968,7 @@ app.post('/api/midterm/generate', requireAuth, async (c) => {
   // Fetch questions with weighted selection
   const allQuestions = await c.env.DB
     .prepare('SELECT q.*, t.name as topic_name FROM questions q LEFT JOIN topics t ON q.topic_id = t.id WHERE q.course_id = ? AND q.difficulty >= ? AND q.difficulty <= ? ORDER BY RANDOM()')
-    .bind(body.course_id, minDifficulty, maxDifficulty)
+    .bind(courseId, minDifficulty, maxDifficulty)
     .all();
 
   // Apply weighted scoring if config provided
@@ -1047,7 +1031,7 @@ app.post('/api/midterm/generate', requireAuth, async (c) => {
     midterm_id: midtermId,
     questions: selectedQuestions,
     config: config || { id: body.difficulty || 'custom', name: body.difficulty || 'Custom' },
-    credits_remaining: user.plan === 'unlimited' ? null : user.credits - creditCost,
+    credits_remaining: user.has_unlimited ? null : user.credits - creditCost,
   });
 });
 
@@ -1112,6 +1096,18 @@ app.get('/api/courses/:id/stats', requireAuth, async (c) => {
     exams: examCount?.count ?? 0,
     questions: questionCount?.count ?? 0,
   });
+});
+
+// Get questions for a course
+app.get('/api/courses/:id/questions', requireAuth, async (c) => {
+  const courseId = c.req.param('id');
+  const limit = Number(c.req.query('limit') ?? 50);
+
+  const results = await c.env.DB.prepare(
+    'SELECT q.*, t.name as topic_name FROM questions q LEFT JOIN topics t ON q.topic_id = t.id WHERE q.course_id = ? LIMIT ?'
+  ).bind(courseId, limit).all();
+
+  return c.json({ questions: results.results ?? [] });
 });
 
 // Public topics list (no auth)

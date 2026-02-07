@@ -132,7 +132,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full px-8 lg:px-[8vw]">
+      <div className="relative z-10 w-full px-8 lg:px-[8vw] pt-20 lg:pt-24">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-0">
           {/* Left content */}
           <div className="max-w-xl">
