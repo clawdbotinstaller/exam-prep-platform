@@ -393,6 +393,57 @@ app.post('/api/admin/seed-mth240', async (c) => {
   }
 });
 
+// Create test users for beta testing
+app.post('/api/admin/create-test-users', async (c) => {
+  try {
+    const db = c.env.DB;
+
+    // Test user with free plan (5 credits)
+    await db.prepare(`
+      INSERT OR IGNORE INTO users
+      (id, name, email, password_hash, credits, plan, monthly_credits, credits_reset_at, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `).bind(
+      'test-user-free',
+      'Test User (Free)',
+      'test@example.com',
+      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // 'test123'
+      5,
+      'free',
+      5,
+      Math.floor(Date.now() / 1000) + 30 * 24 * 3600
+    ).run();
+
+    // Test user with unlimited plan
+    await db.prepare(`
+      INSERT OR IGNORE INTO users
+      (id, name, email, password_hash, credits, plan, monthly_credits, credits_reset_at, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `).bind(
+      'test-user-unlimited',
+      'Test User (Unlimited)',
+      'unlimited@example.com',
+      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // 'test123'
+      999,
+      'unlimited',
+      999,
+      Math.floor(Date.now() / 1000) + 365 * 24 * 3600
+    ).run();
+
+    return c.json({
+      success: true,
+      message: 'Test users created',
+      users: [
+        { email: 'test@example.com', password: 'test123', plan: 'free', credits: 5 },
+        { email: 'unlimited@example.com', password: 'test123', plan: 'unlimited', credits: 999 }
+      ]
+    });
+  } catch (error) {
+    console.error('Create test users error:', error);
+    return c.json({ success: false, error: String(error) }, 500);
+  }
+});
+
 // Auth routes
 app.post('/api/auth/register', async (c) => {
   const body = await json<{ name?: string; email?: string; password?: string }>(c);

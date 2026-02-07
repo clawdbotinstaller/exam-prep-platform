@@ -22,7 +22,7 @@
 
 ## System Overview
 
-Testament is a Calculus 2 exam preparation platform that provides students with real past exam questions from universities. The system uses a credit-based monetization model with a hybrid approach: free monthly credits + unlimited paid access.
+Arkived is a Calculus 2 exam preparation platform that provides students with real past exam questions from universities. The system uses a credit-based monetization model with a hybrid approach: free monthly credits + unlimited paid access.
 
 ### Core Components
 
