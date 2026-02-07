@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Filter, BookOpen } from 'lucide-react';
+import { Search, Filter, BookOpen, FileText, GraduationCap } from 'lucide-react';
 import { apiGet, apiPost } from '../../lib/api';
+import { MidtermSelector } from '../../components/MidtermSelector';
+import { MidtermCustomizer } from '../../components/MidtermCustomizer';
+import type { PresetConfig, MidtermWeightingConfig, SavedMidtermConfig } from '../../types/midterm';
 
 interface Question {
   id: string;
@@ -25,6 +28,9 @@ export default function CourseArchive() {
     { id: 'power', name: 'Power Series' },
     { id: 'taylor', name: 'Taylor Series' },
   ]);
+  const [examTab, setExamTab] = useState<'midterms' | 'finals'>('midterms');
+  const [customizerOpen, setCustomizerOpen] = useState(false);
+  const [customizerBase, setCustomizerBase] = useState<PresetConfig | null>(null);
 
   const filteredQuestions = questions.filter(q => {
     const matchesSearch = q.text.toLowerCase().includes(searchQuery.toLowerCase());
@@ -72,33 +78,101 @@ export default function CourseArchive() {
     }
   };
 
-  const startMidterm = async (difficulty: string) => {
+  const startMidterm = async (config: PresetConfig | MidtermWeightingConfig) => {
     try {
-      const resp = await apiPost<{ questions: any[] }>('/api/midterm/generate', {
+      const resp = await apiPost<{ questions: any[]; midterm_id?: string }>('/api/midterm/generate', {
         course_id: slug,
-        difficulty,
+        config,
       });
       sessionStorage.setItem('question_set', JSON.stringify(resp.questions ?? []));
-      navigate(`/course/${slug}/archive/midterm/${difficulty}`);
-    } catch (err) {
+      if (resp.midterm_id) {
+        sessionStorage.setItem('midterm_id', resp.midterm_id);
+      }
+      navigate(`/course/${slug}/archive/midterm/${config.id}`);
+    } catch (err: any) {
       console.error(err);
-      navigate('/upgrade');
+      if (err?.response?.status === 402) {
+        navigate('/upgrade');
+      }
     }
+  };
+
+  const handleSelectPreset = (preset: PresetConfig) => {
+    startMidterm(preset);
+  };
+
+  const handleCustomize = (preset: PresetConfig) => {
+    setCustomizerBase(preset);
+    setCustomizerOpen(true);
+  };
+
+  const handleSaveCustom = (config: MidtermWeightingConfig) => {
+    setCustomizerOpen(false);
+    startMidterm(config);
+  };
+
+  const handleLoadSaved = (savedConfig: SavedMidtermConfig) => {
+    startMidterm(savedConfig);
   };
 
   return (
     <div className="p-8 lg:p-12">
+      {/* Header */}
       <div className="mb-8">
         <h1 className="font-serif font-semibold text-ink-black text-3xl mb-2">
           Exam Archive
         </h1>
         <p className="font-sans text-pencil-gray">
           Browse real past exam questions, practice 3-question topic bundles (1 credit),
-          or generate a practice midterm (3 credits).
+          or generate a practice midterm.
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-8">
+      {/* Midterms / Finals Tabs */}
+      <div className="flex gap-1 mb-8 border-b border-pencil-gray/20">
+        <button
+          onClick={() => setExamTab('midterms')}
+          className={`flex items-center gap-2 px-6 py-3 font-condensed text-sm uppercase tracking-widest transition-colors ${
+            examTab === 'midterms'
+              ? 'text-blueprint-navy border-b-2 border-blueprint-navy'
+              : 'text-pencil-gray hover:text-ink-black'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          Practice Midterms
+        </button>
+        <button
+          onClick={() => setExamTab('finals')}
+          className={`flex items-center gap-2 px-6 py-3 font-condensed text-sm uppercase tracking-widest transition-colors ${
+            examTab === 'finals'
+              ? 'text-blueprint-navy border-b-2 border-blueprint-navy'
+              : 'text-pencil-gray hover:text-ink-black'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          Practice Finals
+        </button>
+      </div>
+
+      {examTab === 'midterms' ? (
+        <>
+          {/* Midterms Tab */}
+          <MidtermSelector
+            onSelectPreset={handleSelectPreset}
+            onCustomize={handleCustomize}
+            onLoadSaved={handleLoadSaved}
+          />
+
+          {customizerOpen && customizerBase && (
+            <MidtermCustomizer
+              basePreset={customizerBase}
+              onSave={handleSaveCustom}
+              onCancel={() => setCustomizerOpen(false)}
+            />
+          )}
+
+          {/* Existing Browse/Topic/Midterm Mode Tabs */}
+          <div className="flex flex-wrap gap-2 mb-8 mt-12">
         <button
           onClick={() => setMode('browse')}
           className={`px-4 py-2 text-xs font-condensed uppercase tracking-widest ${
@@ -213,27 +287,23 @@ export default function CourseArchive() {
       )}
 
       {mode === 'midterm' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {['easy', 'sample', 'hard'].map((difficulty) => (
-            <div key={difficulty} className="index-card p-6">
-              <h3 className="font-serif text-ink-black mb-2 capitalize">
-                {difficulty} Midterm
-              </h3>
-              <p className="font-sans text-pencil-gray text-sm mb-4">
-                {difficulty === 'easy'
-                  ? 'Shorter and easier mix'
-                  : difficulty === 'hard'
-                  ? 'Longest and toughest questions'
-                  : 'Closest to real exam mix'}
-              </p>
-              <button
-                className="btn-blueprint w-full"
-                onClick={() => startMidterm(difficulty)}
-              >
-                Start (3 credits)
-              </button>
-            </div>
-          ))}
+        <div className="index-card p-6 text-center"
+        style={{ display: 'none' }} /* Old midterm section - replaced by new selector */>
+          <p className="font-sans text-pencil-gray">Use the new midterm selector above.</p>
+        </div>
+      )}
+        </>
+      ) : (
+        /* Finals Tab Placeholder */
+        <div className="index-card p-12 text-center">
+          <GraduationCap className="w-16 h-16 text-pencil-gray/30 mx-auto mb-4" />
+          <h2 className="font-serif font-semibold text-ink-black text-xl mb-2">
+            Practice Finals Coming Soon
+          </h2>
+          <p className="font-sans text-pencil-gray max-w-md mx-auto">
+            We're working on comprehensive final exam practice sets.
+            Check back soon for full-length final exam simulations.
+          </p>
         </div>
       )}
     </div>
