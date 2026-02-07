@@ -455,9 +455,9 @@ app.post('/api/auth/register', async (c) => {
   const creditsResetAt = nowTs() + 30 * 24 * 3600;
 
   await c.env.DB.prepare(
-    'INSERT INTO users (id, name, email, password_hash, credits, plan, monthly_credits, credits_reset_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO users (id, email, password_hash, credits, has_unlimited, unlimited_until, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   )
-    .bind(userId, body.name ?? null, body.email, `${saltHex}:${hashHex}`, 5, 'free', 5, creditsResetAt, createdAt, createdAt)
+    .bind(userId, body.email, `${saltHex}:${hashHex}`, 5, 0, null, createdAt, createdAt)
     .run();
 
   const sessionId = crypto.randomUUID();
@@ -468,7 +468,7 @@ app.post('/api/auth/register', async (c) => {
   return c.json({
     success: true,
     token: sessionId,
-    user: { id: userId, email: body.email, name: body.name, credits: 5, plan: 'free' },
+    user: { id: userId, email: body.email, credits: 5, has_unlimited: 0 },
   });
 });
 
@@ -490,7 +490,7 @@ app.post('/api/auth/login', async (c) => {
   return c.json({
     success: true,
     token: sessionId,
-    user: { id: user.id, email: user.email, name: user.name, credits: user.credits, plan: user.plan },
+    user: { id: user.id, email: user.email, credits: user.credits, has_unlimited: user.has_unlimited },
   });
 });
 
@@ -510,9 +510,9 @@ app.get('/api/auth/me', requireAuth, async (c) => {
     user: {
       id: user.id,
       email: user.email,
-      name: user.name,
       credits: user.credits,
-      plan: user.plan,
+      has_unlimited: user.has_unlimited,
+      unlimited_until: user.unlimited_until,
       credits_reset_at: user.credits_reset_at,
     },
   });
