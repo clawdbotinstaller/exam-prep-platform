@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '../lib/api';
+import ErrorApology from '../components/ErrorApology';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,6 +29,7 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
 
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch topics from API
   useEffect(() => {
@@ -50,14 +52,8 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
         setTopics(sortedTopics);
       } catch (err) {
         console.error('Failed to load topics:', err);
-        // Fallback to hardcoded topics
-        setTopics([
-          { id: '1', name: 'Integration by Parts', question_count: 8, percentage: 85 },
-          { id: '2', name: 'Trigonometric Integrals', question_count: 6, percentage: 72 },
-          { id: '3', name: 'Partial Fractions', question_count: 5, percentage: 68 },
-          { id: '4', name: 'Differential Equations', question_count: 4, percentage: 64 },
-          { id: '5', name: 'Improper Integrals', question_count: 3, percentage: 45 },
-        ]);
+        setError(err instanceof Error ? err.message : 'Failed to load topics');
+        setTopics([]);
       } finally {
         setLoading(false);
       }
@@ -224,6 +220,13 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="w-8 h-8 animate-spin text-blueprint-navy" />
               </div>
+            ) : error ? (
+              <ErrorApology
+                title="We're sorry, something went wrong"
+                message="We couldn't load the topic breakdown. This might be a temporary issue."
+                errorDetails={error}
+                onRetry={() => window.location.reload()}
+              />
             ) : (
               <div className="space-y-5">
                 {topics.map((topic) => {

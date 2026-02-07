@@ -281,6 +281,21 @@ app.post('/init', async (c) => {
       )
     `);
 
+    // Create contact_submissions table
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS contact_submissions (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        subject TEXT,
+        message TEXT NOT NULL,
+        page_url TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        status TEXT DEFAULT 'new'
+      )
+    `);
+
     // Create indexes
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)`);
@@ -1049,6 +1064,46 @@ app.get('/api/featured-question', async (c) => {
 
   if (!question) return c.json({ error: 'No questions available' }, 404);
   return c.json({ question });
+});
+
+// Public contact form submission (no auth required)
+app.post('/api/contact', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { name, email, subject, message, errorDetails } = body;
+
+    // Validate required fields
+    if (!name || !email || !message) {
+      return c.json({ error: 'Name, email, and message are required' }, 400);
+    }
+
+    // Generate unique ID
+    const id = crypto.randomUUID();
+    const pageUrl = c.req.header('Referer') || '';
+    const userAgent = c.req.header('User-Agent') || '';
+
+    // Insert into database
+    await c.env.DB.prepare(`
+      INSERT INTO contact_submissions (id, name, email, subject, message, page_url, user_agent, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'new')
+    `).bind(
+      id,
+      name,
+      email,
+      subject || 'No subject',
+      message + (errorDetails ? `\n\nError Details: ${errorDetails}` : ''),
+      pageUrl,
+      userAgent
+    ).run();
+
+    return c.json({
+      success: true,
+      message: 'Your message has been sent. We\'ll get back to you soon.'
+    });
+  } catch (error) {
+    console.error('Contact form error:', error);
+    return c.json({ error: 'Failed to send message. Please try again.' }, 500);
+  }
 });
 
 // Get exams for a course

@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Eye, Lightbulb, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../lib/api';
+import ErrorApology from '../components/ErrorApology';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,6 +34,7 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
 
   const [question, setQuestion] = useState<FeaturedQuestion | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showSolution, setShowSolution] = useState(false);
 
   // Fetch featured question on mount
@@ -45,20 +47,8 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
         setQuestion(data.question);
       } catch (err) {
         console.error('Failed to load featured question:', err);
-        // Fallback to a default question if API fails
-        setQuestion({
-          id: 'fallback',
-          question_text: 'Evaluate the integral: \\int x² sin(2x) dx',
-          solution_steps: 'Use integration by parts twice. Let u = x², dv = sin(2x)dx. Then du = 2x dx, v = -½cos(2x). Apply the formula and repeat.',
-          topic_name: 'Integration by Parts',
-          exam_year: 2023,
-          exam_semester: 'Winter',
-          exam_type: 'Midterm',
-          points: 6,
-          difficulty: 3,
-          estimated_time: 8,
-          section: '3.1',
-        });
+        setError(err instanceof Error ? err.message : 'Failed to load question');
+        setQuestion(null);
       } finally {
         setLoading(false);
       }
@@ -160,6 +150,13 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
                 <Loader2 className="w-5 h-5 animate-spin text-blueprint-navy" />
                 <span className="font-sans text-pencil-gray text-sm">Loading...</span>
               </div>
+            ) : error ? (
+              <ErrorApology
+                title="We're sorry, something went wrong"
+                message="We couldn't load the featured question. This might be a temporary issue."
+                errorDetails={error}
+                onRetry={() => window.location.reload()}
+              />
             ) : question ? (
               <>
                 <h3 className="font-serif font-semibold text-ink-black text-2xl lg:text-3xl mb-2">
@@ -196,6 +193,12 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="w-8 h-8 animate-spin text-blueprint-navy" />
               </div>
+            ) : error ? (
+              <ErrorApology
+                title="We're sorry, something went wrong"
+                message="We couldn't load the featured question. This might be a temporary issue."
+                errorDetails={error}
+              />
             ) : question ? (
               <>
                 {/* Date stamp */}

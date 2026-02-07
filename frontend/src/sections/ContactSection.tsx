@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Send, CheckCircle, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { API_URL } from '../lib/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,6 +16,8 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
   const headlineRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -69,9 +72,35 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: 'Contact Form Submission',
+          message: formData.message,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Failed to send contact form:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send message');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -183,7 +212,8 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
+                        disabled={isSubmitting}
+                        className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors disabled:opacity-50"
                         placeholder="Your name"
                       />
                     </div>
@@ -197,7 +227,8 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors"
+                        disabled={isSubmitting}
+                        className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors disabled:opacity-50"
                         placeholder="you@university.edu"
                       />
                     </div>
@@ -213,17 +244,25 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                       onChange={handleChange}
                       required
                       rows={4}
-                      className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors resize-none"
+                      disabled={isSubmitting}
+                      className="w-full bg-paper-cream border border-pencil-gray/30 rounded-sm px-4 py-3 font-sans text-ink-black text-sm placeholder:text-pencil-gray/50 focus:outline-none focus:border-blueprint-navy transition-colors resize-none disabled:opacity-50"
                       placeholder="Questions, feedback, or just saying hi..."
                     />
                   </div>
 
+                  {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm">
+                      {error}
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full bg-blueprint-navy text-paper-cream font-condensed text-xs uppercase tracking-widest py-4 flex items-center justify-center gap-2 hover:bg-highlighter-yellow hover:text-blueprint-navy transition-colors"
+                    disabled={isSubmitting}
+                    className="w-full bg-blueprint-navy text-paper-cream font-condensed text-xs uppercase tracking-widest py-4 flex items-center justify-center gap-2 hover:bg-highlighter-yellow hover:text-blueprint-navy transition-colors disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" strokeWidth={1.5} />
-                    Send Message
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>
 

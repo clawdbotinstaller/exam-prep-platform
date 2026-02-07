@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ExternalLink, FileText, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../lib/api';
+import LatexRenderer from '../components/LatexRenderer';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -183,24 +184,8 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
 
   const formatMathSnippet = (text: string) => {
     if (!text) return '';
-    // Extract just the math expression or first line
-    const match = text.match(/\$([^$]+)\$/);
-    if (match) {
-      return match[1]
-        .replace(/\\int/g, '∫')
-        .replace(/\\sin/g, 'sin')
-        .replace(/\\cos/g, 'cos')
-        .replace(/\\ln/g, 'ln')
-        .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '$1/$2')
-        .replace(/\^\{([^}]+)\}/g, '^$1')
-        .substring(0, 40);
-    }
-    return text
-      .replace(/\\int/g, '∫')
-      .replace(/\\sin/g, 'sin')
-      .replace(/\\cos/g, 'cos')
-      .replace(/\\ln/g, 'ln')
-      .substring(0, 40) + (text.length > 40 ? '...' : '');
+    // Return the full text with LaTeX - LatexRenderer will handle it
+    return text.length > 60 ? text.substring(0, 60) + '...' : text;
   };
 
   const getQuestionYearLabel = (q: Question) => {
@@ -289,7 +274,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
                   </div>
 
                   <div className="font-mono text-sm text-ink-black mb-4 min-h-[40px]">
-                    {formatMathSnippet(question.question_text)}
+                    <LatexRenderer tex={formatMathSnippet(question.question_text)} />
                   </div>
 
                   <div className="topic-tag">
@@ -323,7 +308,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
                     Evaluate:
                   </p>
                   <div className="font-mono text-xl lg:text-2xl text-ink-black mb-6">
-                    {formatMathSnippet(featuredQuestion.question_text)}
+                    <LatexRenderer tex={featuredQuestion.question_text} />
                   </div>
                   <div className="w-full h-px bg-pencil-gray/20 mb-6" />
                   <p className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest">

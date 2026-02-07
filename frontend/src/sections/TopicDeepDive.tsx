@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Loader2, Lightbulb } from 'lucide-react';
 import { API_URL } from '../lib/api';
+import ErrorApology from '../components/ErrorApology';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -39,6 +40,7 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
   const [quickQuestion, setQuickQuestion] = useState<QuickQuestion | null>(null);
   const [examQuestion, setExamQuestion] = useState<ExamQuestion | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showQuickSolution, setShowQuickSolution] = useState(false);
 
   // Fetch two real questions on mount
@@ -60,28 +62,9 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
         }
       } catch (err) {
         console.error('Failed to load questions:', err);
-        // Fallbacks
-        setQuickQuestion({
-          id: 'quick-fallback',
-          question_text: 'Evaluate: \\int e^x \\cos(x) dx',
-          solution_steps: 'Apply integration by parts twice. Let u = e^x, dv = cos(x)dx. After two rounds, solve for the original integral.',
-          estimated_time: 2,
-          topic_name: 'Integration by Parts',
-        });
-        setExamQuestion({
-          id: 'exam-fallback',
-          question_text: 'Consider the region bounded by y = \\sqrt{x}, y = 0, and x = 4.',
-          source_points: 10,
-          difficulty: 4,
-          source_exam_year: 2023,
-          source_exam_type: 'Final',
-          has_subparts: 1,
-          subparts_json: JSON.stringify([
-            { number: 'a', points: 3, text: 'Find the area of the region.' },
-            { number: 'b', points: 4, text: 'Find the volume when rotated about the x-axis.' },
-            { number: 'c', points: 3, text: 'Find the volume when rotated about y = 2.' },
-          ]),
-        });
+        setError(err instanceof Error ? err.message : 'Failed to load questions');
+        setQuickQuestion(null);
+        setExamQuestion(null);
       } finally {
         setLoading(false);
       }
@@ -228,6 +211,15 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
         {loading ? (
           <div className="relative z-10 flex items-center justify-center h-64">
             <Loader2 className="w-8 h-8 animate-spin text-blueprint-navy" />
+          </div>
+        ) : error ? (
+          <div className="relative z-10">
+            <ErrorApology
+              title="We're sorry, something went wrong"
+              message="We couldn't load the questions. This might be a temporary issue."
+              errorDetails={error}
+              onRetry={() => window.location.reload()}
+            />
           </div>
         ) : (
           <>
