@@ -184,8 +184,9 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
 
   const formatMathSnippet = (text: string) => {
     if (!text) return '';
-    // Return the full text with LaTeX - LatexRenderer will handle it
-    return text.length > 60 ? text.substring(0, 60) + '...' : text;
+    // Don't truncate - show full question text
+    // The card layout will handle overflow with proper line breaks
+    return text;
   };
 
   const getQuestionYearLabel = (q: Question) => {
@@ -235,10 +236,10 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
 
         {/* Content grid */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* Cards grid */}
+          {/* Cards grid - 2 columns on all screen sizes for better LaTeX display */}
           <div
             ref={cardsRef}
-            className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5 lg:w-[52vw]"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5 lg:w-[52vw]"
           >
             {loading ? (
               <div className="col-span-full flex items-center justify-center py-12">
@@ -256,29 +257,33 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
               filteredCards.map((question) => (
                 <div
                   key={question.id}
-                  className="exam-card index-card p-4 lg:p-5 hover:shadow-lg transition-all cursor-pointer group"
+                  className="exam-card index-card p-5 lg:p-6 hover:shadow-lg transition-all cursor-pointer group flex flex-col"
                 >
-                  {/* Date stamp */}
-                  <div className="flex items-center justify-between mb-3">
+                  {/* Header row */}
+                  <div className="flex items-center justify-between mb-4">
                     <span className="date-stamp text-[9px]">
                       {formatDate(question.source_exam_year, question.source_exam_type)}
                     </span>
                     <FileText className="w-4 h-4 text-pencil-gray group-hover:text-blueprint-navy transition-colors" strokeWidth={1.5} />
                   </div>
 
-                  {/* Card content */}
+                  {/* Exam type label */}
                   <div className="mb-3">
                     <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
                       {question.source_exam_type} {getQuestionYearLabel(question)}
                     </span>
                   </div>
 
-                  <div className="font-mono text-sm text-ink-black mb-4 min-h-[40px]">
+                  {/* Math content - increased line height and spacing */}
+                  <div className="flex-1 font-mono text-sm text-ink-black mb-4 leading-relaxed">
                     <LatexRenderer tex={formatMathSnippet(question.question_text)} />
                   </div>
 
-                  <div className="topic-tag">
-                    {question.topic_name}
+                  {/* Topic tag at bottom */}
+                  <div className="mt-auto pt-3 border-t border-pencil-gray/10">
+                    <span className="topic-tag text-[10px]">
+                      {question.topic_name}
+                    </span>
                   </div>
                 </div>
               ))

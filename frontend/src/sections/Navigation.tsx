@@ -64,7 +64,7 @@ export default function Navigation() {
             onClick={() => scrollTo('contact')}
             className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors"
           >
-            Questions
+            Contact
           </button>
           <div className="flex items-center gap-4">
             <Link

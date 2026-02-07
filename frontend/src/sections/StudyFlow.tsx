@@ -12,22 +12,22 @@ interface StudyFlowProps {
 const steps = [
   {
     number: '01',
-    title: 'Browse the archive',
-    description: 'Explore 80+ real exam questions from the past 5 years. Filter by topic, difficulty, or exam type to find exactly what you need to practice.',
+    title: 'Recognize the pattern',
+    description: 'Browse 80+ real exam questions from the past 5 years. Filter by topic to find problems that match what you\'re struggling with.',
     icon: Target,
-    math: 'Free',
+    math: 'Recognize',
   },
   {
     number: '02',
-    title: 'Try it yourself first',
-    description: 'Attempt the problem under exam conditions. Write out your full solution before checking the answer—this builds the pattern recognition you need.',
+    title: 'Practice under exam conditions',
+    description: 'Attempt the problem before checking the answer. Write out your full solution—this builds the muscle memory you need for test day.',
     icon: BookCheck,
     math: 'Practice',
   },
   {
     number: '03',
-    title: 'Compare with step-by-step',
-    description: 'View detailed worked solutions broken down by technique. Identify where you went wrong and learn the most efficient approach for next time.',
+    title: 'Learn from worked solutions',
+    description: 'View detailed step-by-step solutions broken down by technique. Identify where you went wrong and learn the efficient approach.',
     icon: Timer,
     math: 'Learn',
   },
@@ -130,7 +130,7 @@ export default function StudyFlow({ className = '' }: StudyFlowProps) {
             ref={titleRef}
             className="font-serif font-semibold text-ink-black text-3xl lg:text-4xl max-w-lg"
           >
-            How to use <span className="font-serif italic text-blueprint-navy tracking-tight">arkive</span>
+            How it works
           </h2>
           <span className="date-stamp">Method</span>
         </div>
@@ -138,38 +138,41 @@ export default function StudyFlow({ className = '' }: StudyFlowProps) {
         {/* Ruler divider */}
         <div className="ruler-divider mb-12 max-w-md" />
 
-        {/* Step cards */}
-        <div ref={cardsRef} className="space-y-6 lg:space-y-8">
-          {steps.map((step) => {
+        {/* Bento grid steps */}
+        <div ref={cardsRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          {steps.map((step, index) => {
             const Icon = step.icon;
+            const isLarge = index === 0;
             return (
               <div
                 key={step.number}
-                className="step-card index-card p-6 lg:p-8 flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10"
+                className={`step-card index-card p-6 lg:p-8 flex flex-col justify-between group hover:shadow-lg transition-all duration-300 ${
+                  isLarge ? 'lg:col-span-2 lg:row-span-1' : ''
+                }`}
               >
-                {/* Number circle */}
-                <div className="flex-shrink-0 w-14 h-14 lg:w-16 lg:h-16 border-2 border-blueprint-navy flex items-center justify-center">
-                  <span className="font-mono font-medium text-blueprint-navy text-lg lg:text-xl">
-                    {step.number}
+                {/* Top row: Number and Icon */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono font-bold text-blueprint-navy/30 text-sm">
+                      {step.number}
+                    </span>
+                    <div className="w-10 h-10 bg-blueprint-navy/5 flex items-center justify-center group-hover:bg-blueprint-navy group-hover:text-paper-cream transition-colors">
+                      <Icon className="w-5 h-5 text-blueprint-navy group-hover:text-paper-cream transition-colors" strokeWidth={1.5} />
+                    </div>
+                  </div>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-pencil-gray/50 border border-pencil-gray/20 px-2 py-1">
+                    {step.math}
                   </span>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Icon className="w-5 h-5 text-blueprint-navy" strokeWidth={1.5} />
-                    <h3 className="font-serif font-semibold text-ink-black text-lg lg:text-xl">
-                      {step.title}
-                    </h3>
-                  </div>
-                  <p className="font-sans text-pencil-gray text-sm lg:text-base leading-relaxed max-w-xl">
+                <div>
+                  <h3 className="font-serif font-semibold text-ink-black text-lg lg:text-xl mb-3 group-hover:text-blueprint-navy transition-colors">
+                    {step.title}
+                  </h3>
+                  <p className="font-sans text-pencil-gray text-sm leading-relaxed">
                     {step.description}
                   </p>
-                </div>
-
-                {/* Math decoration */}
-                <div className="flex-shrink-0 font-mono text-blueprint-navy/40 text-lg lg:text-xl">
-                  {step.math}
                 </div>
               </div>
             );

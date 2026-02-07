@@ -1,7 +1,7 @@
 import { useRef, useLayoutEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Send, CheckCircle, UserPlus } from 'lucide-react';
+import { Send, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../lib/api';
 
@@ -108,7 +108,7 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
       ref={sectionRef}
       id="contact"
       className={`py-20 lg:py-28 ${className}`}
-      style={{ backgroundColor: '#1E3A5F' }}
+      style={{ backgroundColor: '#0F172A' }}
     >
       {/* Subtle blueprint grid */}
       <div
@@ -127,32 +127,31 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
           {/* Left side - Value prop */}
           <div ref={headlineRef} className="lg:max-w-md">
             <div className="inline-flex items-center gap-2 mb-6">
-              <span className="date-stamp !text-paper-cream !border-paper-cream/50">
-                <UserPlus className="w-3 h-3 inline mr-1" strokeWidth={2} />
-                Free to Start
+              <span className="px-3 py-1.5 bg-blueprint-navy/50 border border-slate-600 text-slate-200 font-mono text-[10px] uppercase tracking-widest">
+                <Send className="w-3 h-3 inline mr-1" strokeWidth={2} />
+                Get in Touch
               </span>
             </div>
 
-            <h2 className="font-serif font-semibold text-paper-cream text-3xl lg:text-4xl xl:text-5xl leading-tight mb-4">
-              Build Pattern Recognition
+            <h2 className="font-serif font-semibold text-white text-3xl lg:text-4xl xl:text-5xl leading-tight mb-4">
+              Ready to ace your exam?
             </h2>
-            <p className="font-sans text-paper-cream/70 text-base lg:text-lg leading-relaxed mb-8">
-              Free accounts see every question. Upgrade when you're ready for the solutions
-              and want to track which patterns you've mastered.
+            <p className="font-sans text-slate-300 text-base lg:text-lg leading-relaxed mb-8">
+              Get in touch with questions, feedback, or just to say hi. We're here to help.
             </p>
 
             {/* Benefits list */}
             <div className="space-y-4 mb-8">
               {[
-                { title: 'See every question', desc: 'Full archive, no paywall on problems' },
-                { title: 'Solutions when you need them', desc: 'Step-by-step worked by hand, not AI' },
-                { title: 'Track what you know', desc: 'Mark patterns mastered, find your gaps' },
+                { title: 'Questions about the archive?', desc: 'We can help you find specific topics or exams' },
+                { title: 'Need study advice?', desc: 'Ask about the best approach for your exam prep' },
+                { title: 'Found an issue?', desc: 'Report bugs or suggest improvements' },
               ].map((benefit) => (
                 <div key={benefit.title} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-highlighter-yellow flex-shrink-0 mt-0.5" strokeWidth={2} />
                   <div>
-                    <span className="font-sans text-paper-cream font-medium text-sm block">{benefit.title}</span>
-                    <span className="font-sans text-paper-cream/60 text-sm">{benefit.desc}</span>
+                    <span className="font-sans text-white font-medium text-sm block">{benefit.title}</span>
+                    <span className="font-sans text-slate-400 text-sm">{benefit.desc}</span>
                   </div>
                 </div>
               ))}
@@ -160,10 +159,10 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
 
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center gap-2 bg-paper-cream text-blueprint-navy font-condensed text-xs uppercase tracking-widest px-6 py-3 border border-paper-cream/80 hover:bg-paper-cream/90 transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-white text-blueprint-navy font-condensed text-xs uppercase tracking-widest px-6 py-3 hover:bg-slate-100 transition-colors"
             >
-              <UserPlus className="w-4 h-4" strokeWidth={1.5} />
-              Start Free
+              <Send className="w-4 h-4" strokeWidth={1.5} />
+              Create Free Account
             </Link>
           </div>
 
@@ -276,24 +275,24 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
         </div>
 
         {/* Footer */}
-        <div className="mt-20 pt-8 border-t border-paper-cream/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-20 pt-8 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-serif font-semibold text-paper-cream text-lg">
+            <span className="font-serif font-semibold text-white text-lg">
               Arkived
             </span>
-            <span className="date-stamp !text-paper-cream !border-paper-cream/50">v1.0</span>
+            <span className="px-2 py-0.5 border border-slate-600 text-slate-400 font-mono text-[10px]">v1.0</span>
           </div>
-          <p className="font-condensed text-paper-cream/50 text-[10px] uppercase tracking-widest text-center sm:text-right">
+          <p className="font-condensed text-slate-500 text-[10px] uppercase tracking-widest text-center sm:text-right">
             Real exam questions from real universities. 2022–2024.
           </p>
         </div>
 
         {/* Technical drawing footer */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-paper-cream/20 mt-4">
-          <div className="font-mono text-[10px] text-paper-cream/70 uppercase tracking-tighter">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-700 mt-4">
+          <div className="font-mono text-[10px] text-slate-500 uppercase tracking-tighter">
             Drawing No. CALC-II-2024-REF // Technical Document // No. 0082-C2
           </div>
-          <div className="flex items-center gap-6 font-mono text-[10px] text-paper-cream/80">
+          <div className="flex items-center gap-6 font-mono text-[10px] text-slate-400">
             <span>SYSTEM: STABLE</span>
             <span>DATA_STREAM: ACTIVE</span>
           </div>
