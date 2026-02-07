@@ -28,5 +28,6 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 1f5f52dadd093df9f0b12edaa8ebe680
           workingDirectory: 'worker'
-          command: deploy
+          command: deploy src/index.ts
