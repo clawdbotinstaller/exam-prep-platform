@@ -56,3 +56,4 @@ exams/*.pdf
 *.mov
 *.zip
 *.tar.gz
+.worktrees/
