@@ -43,7 +43,7 @@ LANDING PAGE (/)
             └── On success:
             ├── Create user in D1
             ├── Set 5 credits (monthly free tier)
-            ├── Create JWT session
+            ├── Create session token
             └── REDIRECT → DASHBOARD (/dashboard)
 ```
 
@@ -61,8 +61,8 @@ LANDING PAGE (/)
         ├── Password input
         ├── Submit
         └── On success:
-            ├── Verify password with bcrypt
-            ├── Create JWT session
+            ├── Verify password with PBKDF2
+            ├── Create session token
             └── REDIRECT → DASHBOARD (/dashboard)
 ```
 
@@ -239,7 +239,7 @@ User has 1 credit, tries Analysis (needs 2):
 
 ### Error 1: Auth Expired
 ```
-Any page requiring auth, JWT expired:
+Any page requiring auth, session expired:
 Redirect to LOGIN with message:
 "Session expired. Please sign in again."
 ```

@@ -530,6 +530,58 @@ app.get('/api/courses/:id/topics', requireAuth, async (c) => {
   return c.json({ topics: topics.results ?? [] });
 });
 
+// Topic detail with analysis
+app.get('/api/courses/:courseId/topics/:topicId', requireAuth, async (c) => {
+  const courseId = c.req.param('courseId');
+  const topicId = c.req.param('topicId');
+  const db = c.env.DB;
+
+  // Get topic info
+  const topic = await db.prepare('SELECT * FROM topics WHERE id = ? AND course_id = ?').bind(topicId, courseId).first<any>();
+  if (!topic) return c.json({ error: 'Topic not found' }, 404);
+
+  // Get sample questions for this topic
+  const questionsResult = await db.prepare(`
+    SELECT q.*, e.year, e.semester, e.exam_type
+    FROM questions q
+    LEFT JOIN exams e ON q.exam_id = e.id
+    WHERE q.topic_id = ?
+    ORDER BY q.difficulty DESC
+    LIMIT 5
+  `).bind(topicId).all();
+
+  // Get frequency stats
+  const examCount = await db.prepare('SELECT COUNT(*) as count FROM exams WHERE course_id = ?').bind(courseId).first<{ count: number }>();
+  const topicAppearances = await db.prepare('SELECT COUNT(*) as count FROM questions WHERE topic_id = ?').bind(topicId).first<{ count: number }>();
+
+  // Calculate average difficulty and points
+  const stats = await db.prepare(`
+    SELECT AVG(difficulty) as avg_difficulty, AVG(points) as avg_points
+    FROM questions WHERE topic_id = ?
+  `).bind(topicId).first<any>();
+
+  return c.json({
+    topic: {
+      ...topic,
+      appearances: topicAppearances?.count ?? 0,
+      totalExams: examCount?.count ?? 0,
+      avgDifficulty: Math.round(stats?.avg_difficulty ?? 3),
+      avgPoints: Math.round(stats?.avg_points ?? 10),
+    },
+    sampleQuestions: questionsResult.results ?? [],
+    analysis: {
+      frequencyScore: topic.frequency_score ?? 0.5,
+      questionCount: topicAppearances?.count ?? 0,
+      commonDifficulties: ['Recognizing the correct approach', 'Algebraic simplification', 'Sign errors in integration'],
+      studyTips: [
+        `Practice ${topicAppearances?.count ?? 0}+ questions from past exams`,
+        'Focus on the setup - most errors happen in the first step',
+        'Time yourself: aim for 8-12 minutes per question',
+      ],
+    },
+  });
+});
+
 // Question bundle (3 questions for 1 credit)
 app.post('/api/questions/bundle', requireAuth, async (c) => {
   const body = await json<{ course_id?: string; topic_id?: string; count?: number }>(c);
@@ -650,6 +702,84 @@ app.post('/api/midterm/generate', requireAuth, async (c) => {
     .bind(body.course_id, limit)
     .all();
   return c.json({ questions: questions.results ?? [], difficulty: body.difficulty });
+});
+
+// Public featured question (no auth required)
+app.get('/api/featured-question', async (c) => {
+  const question = await c.env.DB.prepare(`
+    SELECT q.*, t.name as topic_name, e.year as exam_year, e.semester as exam_semester, e.exam_type
+    FROM questions q
+    LEFT JOIN topics t ON q.topic_id = t.id
+    LEFT JOIN exams e ON q.exam_id = e.id
+    WHERE q.difficulty >= 3 AND q.difficulty <= 4
+    ORDER BY RANDOM()
+    LIMIT 1
+  `).first();
+
+  if (!question) return c.json({ error: 'No questions available' }, 404);
+  return c.json({ question });
+});
+
+// Get exams for a course
+app.get('/api/courses/:id/exams', requireAuth, async (c) => {
+  const courseId = c.req.param('id');
+  const exams = await c.env.DB.prepare(`
+    SELECT e.*, COUNT(q.id) as question_count
+    FROM exams e
+    LEFT JOIN questions q ON e.id = q.exam_id
+    WHERE e.course_id = ?
+    GROUP BY e.id
+    ORDER BY e.year DESC, e.exam_type ASC
+  `).bind(courseId).all();
+
+  return c.json({ exams: exams.results ?? [] });
+});
+
+// Get questions by exam
+app.get('/api/exams/:examId/questions', requireAuth, async (c) => {
+  const examId = c.req.param('examId');
+  const questions = await c.env.DB.prepare(`
+    SELECT q.*, t.name as topic_name
+    FROM questions q
+    LEFT JOIN topics t ON q.topic_id = t.id
+    WHERE q.exam_id = ?
+    ORDER BY q.question_number ASC
+  `).bind(examId).all();
+
+  return c.json({ questions: questions.results ?? [] });
+});
+
+// Get exam stats for course home
+app.get('/api/courses/:id/stats', requireAuth, async (c) => {
+  const courseId = c.req.param('id');
+
+  const examCount = await c.env.DB.prepare(`
+    SELECT COUNT(*) as count FROM exams WHERE course_id = ?
+  `).bind(courseId).first<{ count: number }>();
+
+  const questionCount = await c.env.DB.prepare(`
+    SELECT COUNT(*) as count FROM questions WHERE course_id = ?
+  `).bind(courseId).first<{ count: number }>();
+
+  return c.json({
+    exams: examCount?.count ?? 0,
+    questions: questionCount?.count ?? 0,
+  });
+});
+
+// Public topics list (no auth)
+app.get('/api/courses/:id/topics/public', async (c) => {
+  const courseId = c.req.param('id');
+  const topics = await c.env.DB.prepare(`
+    SELECT t.*, COUNT(q.id) as question_count
+    FROM topics t
+    LEFT JOIN questions q ON t.id = q.topic_id
+    WHERE t.course_id = ?
+    GROUP BY t.id
+    ORDER BY t.frequency_score DESC
+  `).bind(courseId).all();
+
+  return c.json({ topics: topics.results ?? [] });
 });
 
 // 404 handler

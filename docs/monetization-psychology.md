@@ -12,8 +12,8 @@
 This report analyzes credit-based monetization systems across leading educational apps and mobile games to provide data-driven recommendations for the Calc 2 app's pricing strategy. Key findings suggest that **5 free credits is likely insufficient** to demonstrate full value, and a **hybrid model** combining credit packs with an unlimited option will maximize both conversion and revenue.
 
 **Key Recommendations:**
-1. Increase initial free credits from 5 to **7-10 credits**
-2. Implement tiered pricing: $4.99/5 credits, $9.99/15 credits, $19.99/unlimited monthly
+1. Increase initial free credits to 5
+2. Implement tiered pricing:, $9.99/15 credits, $19.99/unlimited monthly
 3. Position unlimited pass as the "anchor" to drive credit pack sales
 4. Use time-limited 2x credit promotions during exam periods
 

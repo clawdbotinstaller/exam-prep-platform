@@ -1,6 +1,8 @@
-import { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Loader2 } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -8,13 +10,13 @@ interface TopicBreakdownProps {
   className?: string;
 }
 
-const topics = [
-  { name: 'Integration Techniques', percentage: 85 },
-  { name: 'Sequences & Series', percentage: 72 },
-  { name: 'Differential Equations', percentage: 68 },
-  { name: 'Applications (Area/Volume)', percentage: 64 },
-  { name: 'Parametric / Polar', percentage: 45 },
-];
+interface Topic {
+  id: string;
+  name: string;
+  question_count: number;
+  frequency_score?: number;
+  percentage?: number;
+}
 
 export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -24,9 +26,48 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
   const captionRef = useRef<HTMLParagraphElement>(null);
   const rulerRef = useRef<HTMLDivElement>(null);
 
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch topics from API
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        // Use the public endpoint for topics
+        const res = await fetch(`${API_URL}/api/courses/calc2/topics/public`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+
+        // Sort by question count (frequency) and take top 5
+        const sortedTopics = (data.topics || [])
+          .sort((a: Topic, b: Topic) => (b.question_count || 0) - (a.question_count || 0))
+          .slice(0, 5)
+          .map((t: Topic) => ({
+            ...t,
+            percentage: Math.min(95, Math.max(30, (t.question_count || 0) * 3)),
+          }));
+
+        setTopics(sortedTopics);
+      } catch (err) {
+        console.error('Failed to load topics:', err);
+        // Fallback to hardcoded topics
+        setTopics([
+          { id: '1', name: 'Integration Techniques', question_count: 8, percentage: 85 },
+          { id: '2', name: 'Sequences & Series', question_count: 6, percentage: 72 },
+          { id: '3', name: 'Differential Equations', question_count: 5, percentage: 68 },
+          { id: '4', name: 'Applications (Area/Volume)', question_count: 4, percentage: 64 },
+          { id: '5', name: 'Parametric / Polar', question_count: 3, percentage: 45 },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTopics();
+  }, []);
+
   useLayoutEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
+    if (!section || loading) return;
 
     const ctx = gsap.context(() => {
       const listItems = listRef.current?.querySelectorAll('.topic-item');
@@ -127,7 +168,13 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
     }, section);
 
     return () => ctx.revert();
-  }, []);
+  }, [loading]);
+
+  const getPercentage = (topic: Topic) => {
+    // Calculate percentage based on question count relative to total
+    const maxCount = Math.max(...topics.map(t => t.question_count || 0), 1);
+    return Math.min(95, Math.max(25, Math.round((topic.question_count || 0) / maxCount * 100)));
+  };
 
   return (
     <section
@@ -166,55 +213,64 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
               ref={subheadRef}
               className="font-sans text-pencil-gray text-base lg:text-lg leading-relaxed max-w-sm"
             >
-              We clustered similar problems across 80+ papers. Here's what repeats
+              We clustered similar problems across 5+ papers. Here&apos;s what repeats
               most, even when the numbers change.
             </p>
           </div>
 
           {/* Right content - Topic list */}
           <div ref={listRef} className="lg:w-[34vw] lg:max-w-md">
-            <div className="space-y-5">
-              {topics.map((topic) => (
-                <div
-                  key={topic.name}
-                  className="topic-item flex items-center gap-4"
-                >
-                  <div 
-                    className="topic-tick w-3 h-3 flex-shrink-0"
-                    style={{ 
-                      backgroundColor: '#1E3A5F',
-                      transform: 'rotate(45deg)'
-                    }}
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-serif font-medium text-ink-black text-sm lg:text-base">
-                        {topic.name}
-                      </span>
-                      <span className="font-mono text-blueprint-navy text-sm">
-                        {topic.percentage}%
-                      </span>
-                    </div>
-                    <div className="h-1.5 bg-pencil-gray/10 rounded-sm overflow-hidden">
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-blueprint-navy" />
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {topics.map((topic) => {
+                  const percentage = getPercentage(topic);
+                  return (
+                    <div
+                      key={topic.id}
+                      className="topic-item flex items-center gap-4"
+                    >
                       <div
-                        className="h-full rounded-sm"
+                        className="topic-tick w-3 h-3 flex-shrink-0"
                         style={{
-                          width: `${topic.percentage}%`,
-                          backgroundColor: topic.percentage > 75 ? '#1E3A5F' : topic.percentage > 60 ? '#3D3D3D' : '#6D6D6D',
+                          backgroundColor: '#1E3A5F',
+                          transform: 'rotate(45deg)'
                         }}
                       />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-serif font-medium text-ink-black text-sm lg:text-base">
+                            {topic.name}
+                          </span>
+                          <span className="font-mono text-blueprint-navy text-sm">
+                            {topic.question_count} questions
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-pencil-gray/10 rounded-sm overflow-hidden">
+                          <div
+                            className="h-full rounded-sm"
+                            style={{
+                              width: `${percentage}%`,
+                              backgroundColor: percentage > 75 ? '#1E3A5F' : percentage > 60 ? '#3D3D3D' : '#6D6D6D',
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Caption */}
             <p
               ref={captionRef}
               className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mt-8 text-right"
             >
-              Pattern clusters, not identical wording. Frequency across midterms & finals.
+              Pattern clusters, not identical wording. Frequency across midterms.
             </p>
           </div>
         </div>

@@ -5,7 +5,7 @@
 
 ---
 
-## 1. Philosophy: Kimi-First, Two-Step Pipeline
+## 1. Philosophy: Kimi-First, Two-Step Pipeline (Web, Moderate)
 
 Instead of a multi-stage pipeline with orchestration, we use Kimi's reasoning capabilities to do extraction, tagging, and canonicalization in **one shot per exam**.
 
@@ -39,6 +39,7 @@ Instead of a multi-stage pipeline with orchestration, we use Kimi's reasoning ca
 - `canonical_form` (normalized for pattern matching)
 - `pattern_id` (assigned in aggregation step)
 - `frequency_score` (computed in aggregation step)
+- `exam_year`, `exam_type` (copied from exam for aggregation convenience)
 
 **Question Pattern**
 - `pattern_id`, `topic_id`, `techniques`, `canonical_form`
@@ -46,10 +47,10 @@ Instead of a multi-stage pipeline with orchestration, we use Kimi's reasoning ca
 
 ---
 
-## 3. Step 1: Kimi One-Shot Extraction
+## 3. Step 1: Kimi One-Shot Extraction (Web, Moderate)
 
 ### Input
-Single exam PDF (or extracted text if PDF is image-based)
+Single exam PDF **or** OCR text if the PDF is scanned.
 
 ### Prompt Template
 
@@ -136,24 +137,35 @@ Process the attached exam and output valid JSON only.
 ### Output
 `{year}_{semester}_{exam_type}.json` (e.g., `2023_Spring_Midterm.json`)
 
-### Execution
-Run for all 5 exams in parallel:
+### Execution (Web, Moderate)
+Because the PDFs are scanned, prefer OCR to text first, then send the text into Kimi.
+Process one exam per Kimi chat to keep context clean.
 
-```bash
-# Manual or script
-kimi process 2022_Final.pdf > 2022_Final.json
-kimi process 2023_Midterm.pdf > 2023_Midterm.json
-kimi process 2023_Final.pdf > 2023_Final.json
-kimi process 2024_Midterm.pdf > 2024_Midterm.json
-kimi process 2024_Final.pdf > 2024_Final.json
+```text
+1) OCR the scanned PDF to text
+2) Paste OCR text into Kimi with the prompt template
+3) Save output as JSON
 ```
+
+**If OCR text is too long:** split by sections (e.g., Q1–Q4, Q5–Q8). Run Kimi for each chunk, then merge into one JSON.
+
+---
+
+## 3.1 OCR Guidance (Scanned PDFs)
+
+- Use a math‑friendly OCR tool if possible.
+- Preserve question numbering and point values.
+- If OCR is noisy, keep the raw PDF nearby for manual corrections.
+
+Output file naming:
+`2023_Spring_Midterm.json`, `2024_Fall_Final.json`, etc.
 
 ---
 
 ## 4. Step 2: Aggregation Script
 
 The aggregation script processes all 5 JSON files and:
-1. Groups questions into patterns by canonical form similarity
+1. Groups questions into patterns by canonical form similarity (plus fuzzy match)
 2. Assigns `pattern_id` to each question
 3. Computes frequency statistics
 4. Outputs D1-ready seed files
@@ -161,10 +173,12 @@ The aggregation script processes all 5 JSON files and:
 ### Pattern Grouping Logic
 
 ```python
+from hashlib import sha1
+
 def generate_pattern_signature(question):
-    """Create deterministic signature from canonical form + techniques"""
+    \"\"\"Create deterministic signature from canonical form + techniques\"\"\"
     techniques = sorted(question['techniques'])
-    return f"{question['topic']}|{','.join(techniques)}|{question['canonical_form']}"
+    return f\"{question['topic']}|{','.join(techniques)}|{question['canonical_form']}\"
 
 # Group questions by signature
 patterns = {}
@@ -172,7 +186,7 @@ for question in all_questions:
     sig = generate_pattern_signature(question)
     if sig not in patterns:
         patterns[sig] = {
-            'pattern_id': hash(sig),
+            'pattern_id': sha1(sig.encode()).hexdigest(),
             'topic': question['topic'],
             'techniques': question['techniques'],
             'canonical_form': question['canonical_form'],
@@ -182,7 +196,8 @@ for question in all_questions:
             'last_seen_year': 0
         }
     patterns[sig]['questions'].append(question)
-    patterns[sig]['appearance_count'] += 1
+    patterns[sig].setdefault('exam_ids', set()).add(question['exam_id'])
+    patterns[sig]['appearance_count'] = len(patterns[sig]['exam_ids'])
     patterns[sig]['first_seen_year'] = min(patterns[sig]['first_seen_year'], question['exam_year'])
     patterns[sig]['last_seen_year'] = max(patterns[sig]['last_seen_year'], question['exam_year'])
 
@@ -190,6 +205,16 @@ for question in all_questions:
 for pattern in patterns.values():
     pattern['appearance_rate'] = pattern['appearance_count'] / total_exams
 ```
+
+### Fuzzy Matching (Similar But Not Identical)
+
+Deterministic signatures are strict. For near‑duplicates, add a fuzzy layer:
+
+1. Compute embeddings for `canonical_form`
+2. Cluster when cosine similarity ≥ **0.88**
+3. If 0.80–0.88, flag for manual review
+
+This catches variants that differ in phrasing or numeric structure but are conceptually the same.
 
 ### Output Files
 

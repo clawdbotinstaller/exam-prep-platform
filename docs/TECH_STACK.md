@@ -92,11 +92,10 @@ Built into Cloudflare Workers - no client needed
 - Free tier: 5GB storage, 100k queries/day
 - Replicates globally within Cloudflare's network
 
-### Auth: Custom JWT
+### Auth: Session Tokens (Opaque)
 - No Auth0/Clerk (keep it simple)
-- bcrypt for password hashing
-- jose for JWT signing/verification
-- Sessions stored in D1
+- Password hashing via PBKDF2 (Web Crypto)
+- Opaque session tokens stored in D1
 
 ### Payments: Stripe
 ```
@@ -105,16 +104,6 @@ stripe: ^17.0.0
 - Checkout hosted pages
 - Webhook handling in Workers
 - PCI compliance handled by Stripe
-
-### AI: OpenAI API
-```
-openai: ^4.0.0
-```
-- GPT-4o-mini for question generation
-- Reasoning effort: low (fast, cheap)
-- Caching layer to reduce costs
-
----
 
 ## Infrastructure
 
@@ -169,9 +158,7 @@ typescript: ~5.9.3
     "gsap": "^3.12.0",
     "lucide-react": "^0.474.0",
     "stripe": "^17.0.0",
-    "openai": "^4.0.0",
-    "bcryptjs": "^2.4.3",
-    "jose": "^5.0.0"
+    "openai": "^4.0.0"
   },
   "devDependencies": {
     "vite": "^7.2.4",

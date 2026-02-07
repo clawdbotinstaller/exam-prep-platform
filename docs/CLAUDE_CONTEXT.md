@@ -42,7 +42,7 @@ curl -X POST http://localhost:8787/init
 
 ### Database Tables
 - `users` - accounts with credits/unlimited status
-- `sessions` - JWT session management
+- `sessions` - session token management
 - `courses` - calc2, calc3, etc.
 - `topics` - integration, series, etc. with frequency scores
 - `questions` - exam questions with solutions and source attribution

@@ -113,12 +113,13 @@
 
 ### In Scope (MVP)
 - Single course: Calculus 2
-- 4 past exams as data source
+- 6 past exams as data source
 - Email/password auth only
 - Monthly credit subscriptions
 - Web app only (no native apps)
 
 ### Out of Scope (MVP)
+- notes
 - Multiple courses
 - Social features (sharing, leaderboards)
 - Tutor marketplace
@@ -132,9 +133,7 @@
 ## 7. Technical Constraints
 
 - Must work on mobile browsers
-- Must comply with university fair use policies
-- Must not store raw exam PDFs (process and delete)
-- Must handle payment PCI compliance via Stripe
+- Must handle payment via Stripe
 
 ---
 
@@ -144,8 +143,6 @@
 |------|------------|
 | AI-generated questions are wrong | Manual review of all questions before deployment |
 | Low conversion (free → paid) | Optimize paywall timing, A/B test pricing |
-| University objects to exam analysis | Position as "study guide" not "exam bank", comply with takedown requests |
-| OpenAI API costs too high | Implement caching, rate limiting, adjust credit costs |
 
 ---
 
@@ -165,8 +162,8 @@
 
 ## 10. Open Questions
 
-1. Should we offer a "guarantee" (money back if you fail)?
-2. Should we partner with student organizations for distribution?
+1. Should we offer a "guarantee" (money back if you fail)? (NOO)
+2. Should we partner with student organizations for distribution?(N
 3. Do we need a professor approval process for questions?
 
 ---

@@ -1,11 +1,32 @@
-import { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Loader2, Lightbulb } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface TopicDeepDiveProps {
   className?: string;
+}
+
+interface QuickQuestion {
+  id: string;
+  question_text: string;
+  solution_steps: string;
+  estimated_time: number;
+  topic_name: string;
+}
+
+interface ExamQuestion {
+  id: string;
+  question_text: string;
+  points: number;
+  difficulty: number;
+  source_exam_year: number;
+  source_exam_type: string;
+  has_subparts: number;
+  subparts_json: string | null;
 }
 
 export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
@@ -15,9 +36,62 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
   const rightCardRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLParagraphElement>(null);
 
+  const [quickQuestion, setQuickQuestion] = useState<QuickQuestion | null>(null);
+  const [examQuestion, setExamQuestion] = useState<ExamQuestion | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showQuickSolution, setShowQuickSolution] = useState(false);
+
+  // Fetch two real questions on mount
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        // Fetch a quick practice question (easy/medium)
+        const quickRes = await fetch(`${API_URL}/api/featured-question`);
+        if (quickRes.ok) {
+          const quickData = await quickRes.json();
+          setQuickQuestion(quickData.question);
+        }
+
+        // Fetch an exam question with subparts or higher difficulty
+        const examRes = await fetch(`${API_URL}/api/featured-question`);
+        if (examRes.ok) {
+          const examData = await examRes.json();
+          setExamQuestion(examData.question);
+        }
+      } catch (err) {
+        console.error('Failed to load questions:', err);
+        // Fallbacks
+        setQuickQuestion({
+          id: 'quick-fallback',
+          question_text: 'Evaluate: \\int e^x \\cos(x) dx',
+          solution_steps: 'Apply integration by parts twice. Let u = e^x, dv = cos(x)dx. After two rounds, solve for the original integral.',
+          estimated_time: 2,
+          topic_name: 'Integration by Parts',
+        });
+        setExamQuestion({
+          id: 'exam-fallback',
+          question_text: 'Consider the region bounded by y = \\sqrt{x}, y = 0, and x = 4.',
+          points: 10,
+          difficulty: 4,
+          source_exam_year: 2023,
+          source_exam_type: 'Final',
+          has_subparts: 1,
+          subparts_json: JSON.stringify([
+            { number: 'a', points: 3, text: 'Find the area of the region.' },
+            { number: 'b', points: 4, text: 'Find the volume when rotated about the x-axis.' },
+            { number: 'c', points: 3, text: 'Find the volume when rotated about y = 2.' },
+          ]),
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuestions();
+  }, []);
+
   useLayoutEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
+    if (!section || loading) return;
 
     const ctx = gsap.context(() => {
       const scrollTl = gsap.timeline({
@@ -94,7 +168,38 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
     }, section);
 
     return () => ctx.revert();
-  }, []);
+  }, [loading]);
+
+  const getDifficultyLabel = (diff: number) => {
+    if (diff <= 2) return 'Easy';
+    if (diff <= 3) return 'Medium';
+    if (diff <= 4) return 'Medium-Hard';
+    return 'Hard';
+  };
+
+  const formatMathText = (text: string) => {
+    if (!text) return '';
+    return text
+      .replace(/\\int/g, '∫')
+      .replace(/\\sin/g, 'sin')
+      .replace(/\\cos/g, 'cos')
+      .replace(/\\tan/g, 'tan')
+      .replace(/\\ln/g, 'ln')
+      .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
+      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<sup>$1</sup>&frasl;<sub>$2</sub>')
+      .replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>')
+      .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
+      .replace(/\$([^$]+)\$/g, '$1');
+  };
+
+  const parseSubparts = (json: string | null) => {
+    if (!json) return [];
+    try {
+      return JSON.parse(json);
+    } catch {
+      return [];
+    }
+  };
 
   return (
     <section
@@ -120,77 +225,125 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
           </span>
         </div>
 
-        {/* Cards */}
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 lg:gap-8">
-          {/* Left card - medium */}
-          <div
-            ref={leftCardRef}
-            className="index-card p-6 lg:p-8 lg:w-[34vw] lg:h-[40vh] flex flex-col justify-center"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="topic-tag text-[10px]">Quick Practice</span>
-              <span className="date-stamp text-[9px]">2 min</span>
-            </div>
-            
-            <p className="font-sans text-pencil-gray text-sm mb-4">
-              Evaluate:
-            </p>
-            
-            <div className="font-mono text-xl lg:text-2xl text-ink-black text-center py-4">
-              ∫ eˣ cos(x) dx
-            </div>
-            
-            <p className="font-sans text-pencil-gray text-xs mt-4">
-              <span className="hand-highlight">Hint:</span> Apply integration by parts twice.
-            </p>
+        {loading ? (
+          <div className="relative z-10 flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-blueprint-navy" />
           </div>
-
-          {/* Right card - large */}
-          <div
-            ref={rightCardRef}
-            className="index-card p-6 lg:p-10 lg:w-[46vw] lg:min-h-[64vh] flex flex-col"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <span className="topic-tag text-[10px]">Exam Problem</span>
-              <div className="flex items-center gap-3">
-                <span className="date-stamp text-[9px]">Final 2023</span>
-                <span className="font-mono text-xs text-pencil-gray">10 pts</span>
-              </div>
-            </div>
-
-            <p className="font-sans text-pencil-gray text-sm mb-4">
-              Consider the region bounded by y = √x, y = 0, and x = 4.
-            </p>
-
-            <div className="space-y-4 font-sans text-ink-black text-sm">
-              <p>(a) Find the area of the region. <span className="font-mono text-pencil-gray text-xs">(3 pts)</span></p>
-              <p>(b) Find the volume when rotated about the x-axis. <span className="font-mono text-pencil-gray text-xs">(4 pts)</span></p>
-              <p>(c) Find the volume when rotated about y = 2. <span className="font-mono text-pencil-gray text-xs">(3 pts)</span></p>
-            </div>
-
-            <div className="mt-auto pt-6 border-t border-pencil-gray/20">
-              <div className="flex items-center gap-4">
-                <div className="flex-1 h-2 bg-pencil-gray/10 rounded-sm overflow-hidden">
-                  <div 
-                    className="h-full rounded-sm"
-                    style={{ width: '75%', backgroundColor: '#1E3A5F' }}
-                  />
+        ) : (
+          <>
+            {/* Cards */}
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 lg:gap-8">
+              {/* Left card - quick practice */}
+              <div
+                ref={leftCardRef}
+                className="index-card p-6 lg:p-8 lg:w-[34vw] lg:h-[40vh] flex flex-col justify-center"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="topic-tag text-[10px]">Quick Practice</span>
+                  <span className="date-stamp text-[9px]">{quickQuestion?.estimated_time || 2} min</span>
                 </div>
-                <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
-                  Difficulty: Medium-Hard
-                </span>
+
+                <p className="font-sans text-pencil-gray text-sm mb-4">
+                  Evaluate:
+                </p>
+
+                <div
+                  className="font-mono text-xl lg:text-2xl text-ink-black text-center py-4"
+                  dangerouslySetInnerHTML={{
+                    __html: formatMathText(quickQuestion?.question_text || '∫ eˣ cos(x) dx')
+                  }}
+                />
+
+                {showQuickSolution && quickQuestion?.solution_steps && (
+                  <div className="mt-4 p-3 bg-paper-aged/50 rounded border-l-2 border-blueprint-navy">
+                    <p className="font-sans text-ink-black text-xs leading-relaxed">
+                      {quickQuestion.solution_steps.slice(0, 100)}...
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between mt-4">
+                  <p className="font-sans text-pencil-gray text-xs">
+                    <span className="hand-highlight">Hint:</span> Apply integration by parts twice.
+                  </p>
+                  <button
+                    onClick={() => setShowQuickSolution(!showQuickSolution)}
+                    className="p-1 hover:bg-paper-aged rounded"
+                  >
+                    <Lightbulb className="w-4 h-4 text-blueprint-navy" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Right card - exam problem */}
+              <div
+                ref={rightCardRef}
+                className="index-card p-6 lg:p-10 lg:w-[46vw] lg:min-h-[64vh] flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <span className="topic-tag text-[10px]">Exam Problem</span>
+                  <div className="flex items-center gap-3">
+                    <span className="date-stamp text-[9px]">
+                      {examQuestion?.source_exam_type || 'Final'} {examQuestion?.source_exam_year || '2023'}
+                    </span>
+                    <span className="font-mono text-xs text-pencil-gray">{examQuestion?.points || 10} pts</span>
+                  </div>
+                </div>
+
+                <p
+                  className="font-sans text-pencil-gray text-sm mb-4"
+                  dangerouslySetInnerHTML={{
+                    __html: formatMathText(examQuestion?.question_text || 'Consider the region bounded by y = √x, y = 0, and x = 4.')
+                  }}
+                />
+
+                {examQuestion?.has_subparts && examQuestion?.subparts_json ? (
+                  <div className="space-y-4 font-sans text-ink-black text-sm">
+                    {parseSubparts(examQuestion.subparts_json).map((sub: any, idx: number) => (
+                      <p key={idx}>
+                        ({sub.number.replace(/\D/g, '')}) {' '}
+                        <span dangerouslySetInnerHTML={{ __html: formatMathText(sub.text) }} />
+                        {' '}
+                        <span className="font-mono text-pencil-gray text-xs">({sub.points} pts)</span>
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4 font-sans text-ink-black text-sm">
+                    <p>(a) Find the area of the region. <span className="font-mono text-pencil-gray text-xs">(3 pts)</span></p>
+                    <p>(b) Find the volume when rotated about the x-axis. <span className="font-mono text-pencil-gray text-xs">(4 pts)</span></p>
+                    <p>(c) Find the volume when rotated about y = 2. <span className="font-mono text-pencil-gray text-xs">(3 pts)</span></p>
+                  </div>
+                )}
+
+                <div className="mt-auto pt-6 border-t border-pencil-gray/20">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 h-2 bg-pencil-gray/10 rounded-sm overflow-hidden">
+                      <div
+                        className="h-full rounded-sm"
+                        style={{
+                          width: `${(examQuestion?.difficulty || 3) / 5 * 100}%`,
+                          backgroundColor: '#1E3A5F'
+                        }}
+                      />
+                    </div>
+                    <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
+                      Difficulty: {getDifficultyLabel(examQuestion?.difficulty || 3)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Caption */}
-        <p
-          ref={captionRef}
-          className="relative z-10 font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mt-8 lg:mt-12"
-        >
-          3–4 integration problems per midterm on average.
-        </p>
+            {/* Caption */}
+            <p
+              ref={captionRef}
+              className="relative z-10 font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mt-8 lg:mt-12"
+            >
+              3–4 integration problems per midterm on average.
+            </p>
+          </>
+        )}
       </div>
     </section>
   );

@@ -1,12 +1,27 @@
-import { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Eye, Lightbulb } from 'lucide-react';
+import { Eye, Lightbulb, Loader2 } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface QuestionSpotlightProps {
   className?: string;
+}
+
+interface FeaturedQuestion {
+  id: string;
+  question_text: string;
+  solution_steps: string;
+  topic_name: string;
+  exam_year: number;
+  exam_semester: string;
+  exam_type: string;
+  points: number;
+  difficulty: number;
+  estimated_time: number;
+  section: string;
 }
 
 export default function QuestionSpotlight({ className = '' }: QuestionSpotlightProps) {
@@ -15,9 +30,44 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
   const cardRef = useRef<HTMLDivElement>(null);
   const mathContentRef = useRef<HTMLDivElement>(null);
 
+  const [question, setQuestion] = useState<FeaturedQuestion | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showSolution, setShowSolution] = useState(false);
+
+  // Fetch featured question on mount
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/featured-question`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        setQuestion(data.question);
+      } catch (err) {
+        console.error('Failed to load featured question:', err);
+        // Fallback to a default question if API fails
+        setQuestion({
+          id: 'fallback',
+          question_text: 'Evaluate the integral: \\int x² sin(2x) dx',
+          solution_steps: 'Use integration by parts twice. Let u = x², dv = sin(2x)dx. Then du = 2x dx, v = -½cos(2x). Apply the formula and repeat.',
+          topic_name: 'Integration by Parts',
+          exam_year: 2023,
+          exam_semester: 'Winter',
+          exam_type: 'Midterm',
+          points: 6,
+          difficulty: 3,
+          estimated_time: 8,
+          section: '3.1',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeatured();
+  }, []);
+
   useLayoutEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
+    if (!section || loading) return;
 
     const ctx = gsap.context(() => {
       const mathLines = mathContentRef.current?.querySelectorAll('.math-line');
@@ -76,7 +126,12 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
     }, section);
 
     return () => ctx.revert();
-  }, []);
+  }, [loading]);
+
+  const formatExamLabel = () => {
+    if (!question) return '';
+    return `${question.exam_semester} ${question.exam_year} ${question.exam_type}`;
+  };
 
   return (
     <section
@@ -98,25 +153,37 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
                 Featured Problem
               </span>
             </div>
-            
-            <h3 className="font-serif font-semibold text-ink-black text-2xl lg:text-3xl mb-2">
-              From Midterm 2023A
-            </h3>
-            
-            <div className="flex items-center gap-2 mb-6">
-              <span className="topic-tag text-[10px]">Integration</span>
-              <span className="font-mono text-pencil-gray text-xs">6 pts</span>
-            </div>
-            
-            <p className="font-sans text-pencil-gray text-base leading-relaxed mb-8">
-              Try it under exam conditions. Then compare with the worked
-              solution to see the most efficient approach.
-            </p>
-            
-            <button className="btn-blueprint inline-flex items-center gap-2">
-              <Lightbulb className="w-4 h-4" strokeWidth={1.5} />
-              View Solution
-            </button>
+
+            {loading ? (
+              <div className="flex items-center gap-2 py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-blueprint-navy" />
+                <span className="font-sans text-pencil-gray text-sm">Loading...</span>
+              </div>
+            ) : question ? (
+              <>
+                <h3 className="font-serif font-semibold text-ink-black text-2xl lg:text-3xl mb-2">
+                  From {formatExamLabel()}
+                </h3>
+
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="topic-tag text-[10px]">{question.topic_name || 'Integration'}</span>
+                  <span className="font-mono text-pencil-gray text-xs">{question.points} pts</span>
+                </div>
+
+                <p className="font-sans text-pencil-gray text-base leading-relaxed mb-8">
+                  Try it under exam conditions. Then compare with the worked
+                  solution to see the most efficient approach.
+                </p>
+
+                <button
+                  className="btn-blueprint inline-flex items-center gap-2"
+                  onClick={() => setShowSolution(!showSolution)}
+                >
+                  <Lightbulb className="w-4 h-4" strokeWidth={1.5} />
+                  {showSolution ? 'Hide Solution' : 'View Solution'}
+                </button>
+              </>
+            ) : null}
           </div>
 
           {/* Right math card */}
@@ -124,51 +191,90 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
             ref={cardRef}
             className="index-card p-8 lg:p-12 lg:w-[52vw] lg:min-h-[72vh] flex flex-col justify-center"
           >
-            {/* Date stamp */}
-            <div className="flex items-center justify-between mb-6">
-              <span className="date-stamp">Exam Problem</span>
-              <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
-                6 Points
-              </span>
-            </div>
-
-            <div ref={mathContentRef} className="space-y-6">
-              <div className="math-line">
-                <p className="font-sans text-pencil-gray text-sm mb-4">
-                  Evaluate the integral:
-                </p>
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-blueprint-navy" />
               </div>
-
-              <div className="math-line flex justify-center py-8">
-                <div className="font-mono text-3xl lg:text-4xl text-ink-black">
-                  ∫ x² sin(2x) dx
-                </div>
-              </div>
-
-              <div className="math-line">
-                <div className="w-full h-px bg-pencil-gray/20 my-6" />
-              </div>
-
-              <div className="math-line space-y-4">
-                <p className="font-sans text-pencil-gray text-sm">
-                  Show all steps clearly. You may use:
-                </p>
-                <ul className="font-mono text-sm text-ink-black space-y-2 pl-4">
-                  <li className="math-line">• Integration by parts formula</li>
-                  <li className="math-line">• Standard trigonometric identities</li>
-                  <li className="math-line">• Tabular method (optional)</li>
-                </ul>
-              </div>
-
-              <div className="math-line mt-8 pt-6 border-t border-pencil-gray/20">
-                <div className="flex items-center justify-between">
+            ) : question ? (
+              <>
+                {/* Date stamp */}
+                <div className="flex items-center justify-between mb-6">
+                  <span className="date-stamp">Exam Problem</span>
                   <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
-                    Time estimate: 8-12 minutes
+                    {question.points} Points
                   </span>
-                  <span className="topic-tag text-[10px]">Integration by Parts</span>
                 </div>
+
+                <div ref={mathContentRef} className="space-y-6">
+                  <div className="math-line">
+                    <p className="font-sans text-pencil-gray text-sm mb-4">
+                      {question.question_text?.includes('$') ? 'Evaluate:' : question.question_text?.split('.')[0] + '.'}
+                    </p>
+                  </div>
+
+                  <div className="math-line flex justify-center py-8">
+                    <div
+                      className="font-mono text-2xl lg:text-3xl text-ink-black text-center leading-relaxed"
+                      dangerouslySetInnerHTML={{
+                        __html: question.question_text
+                          ?.replace(/\\int/g, '∫')
+                          ?.replace(/\\sin/g, 'sin')
+                          ?.replace(/\\cos/g, 'cos')
+                          ?.replace(/\\tan/g, 'tan')
+                          ?.replace(/\\ln/g, 'ln')
+                          ?.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<sup>$1</sup>&frasl;<sub>$2</sub>')
+                          ?.replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>')
+                          ?.replace(/_{([^}]+)}/g, '<sub>$1</sub>')
+                          ?.replace(/\$([^$]+)\$/g, '$1')
+                          || '∫ x² sin(2x) dx'
+                      }}
+                    />
+                  </div>
+
+                  {showSolution && (
+                    <div className="math-line">
+                      <div className="w-full h-px bg-pencil-gray/20 my-6" />
+                      <div className="bg-paper-aged/50 p-4 rounded border-l-2 border-blueprint-navy">
+                        <p className="font-condensed text-[10px] uppercase tracking-widest text-blueprint-navy mb-2">
+                          Solution
+                        </p>
+                        <p className="font-sans text-ink-black text-sm leading-relaxed whitespace-pre-line">
+                          {question.solution_steps}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="math-line">
+                    <div className="w-full h-px bg-pencil-gray/20 my-6" />
+                  </div>
+
+                  <div className="math-line space-y-4">
+                    <p className="font-sans text-pencil-gray text-sm">
+                      {showSolution ? 'Key techniques used:' : 'You may use:'}
+                    </p>
+                    <ul className="font-mono text-sm text-ink-black space-y-2 pl-4">
+                      <li className="math-line">• Integration by parts formula</li>
+                      <li className="math-line">• Standard trigonometric identities</li>
+                      <li className="math-line">• Tabular method (optional)</li>
+                    </ul>
+                  </div>
+
+                  <div className="math-line mt-8 pt-6 border-t border-pencil-gray/20">
+                    <div className="flex items-center justify-between">
+                      <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
+                        Time estimate: {question.estimated_time || 8}-{question.estimated_time ? question.estimated_time + 4 : 12} minutes
+                      </span>
+                      <span className="topic-tag text-[10px]">Section {question.section || '3.1'}</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <p className="font-sans text-pencil-gray">Failed to load question</p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
