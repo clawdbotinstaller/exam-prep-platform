@@ -1,14 +1,14 @@
 {
-  "name": "testament-api",
+  "name": "arkived-api",
   "version": "1.0.0",
-  "description": "Testament API - Cloudflare Worker with D1 Database",
+  "description": "Arkived API - Cloudflare Worker with D1 Database",
   "main": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:create": "wrangler d1 create testament-db",
-    "db:migrate": "wrangler d1 migrations apply testament-db",
-    "db:seed": "wrangler d1 execute testament-db --file=./seed.sql",
+    "db:create": "wrangler d1 create arkived-db",
+    "db:migrate": "wrangler d1 migrations apply arkived-db",
+    "db:seed": "wrangler d1 execute arkived-db --file=./seed.sql",
     "init": "curl -X POST http://localhost:8787/init"
   },
   "dependencies": {

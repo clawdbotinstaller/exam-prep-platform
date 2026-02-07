@@ -19,7 +19,7 @@ export default function Navbar({ credits = 0, plan = 'free', userName, showCredi
         <Link to="/dashboard" className="flex items-center gap-3">
           <BookOpen className="w-5 h-5 text-blueprint-navy" strokeWidth={1.5} />
           <span className="font-serif font-semibold text-ink-black text-xl tracking-tight">
-            Testament
+            Arkived
           </span>
           <span className="hidden sm:inline date-stamp">v1.0</span>
         </Link>

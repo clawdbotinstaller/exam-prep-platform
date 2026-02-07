@@ -1,4 +1,4 @@
-name = "testament-api"
+name = "arkived-api"
 main = "src/index.ts"
 compatibility_date = "2025-02-05"
 
@@ -7,7 +7,7 @@ ENVIRONMENT = "development"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "testament-db"
+database_name = "arkived-db"
 database_id = "86dbdef7-520c-49a7-b02e-563b3175a6b4"
 
 [build]

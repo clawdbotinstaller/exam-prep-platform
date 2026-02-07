@@ -276,13 +276,13 @@ Load the seed files into Cloudflare D1:
 
 ```bash
 # Import exams
-wrangler d1 execute testament-db --file=./exams.seed.sql
+wrangler d1 execute arkived-db --file=./exams.seed.sql
 
 # Import patterns (first, since questions reference them)
-wrangler d1 execute testament-db --file=./patterns.seed.sql
+wrangler d1 execute arkived-db --file=./patterns.seed.sql
 
 # Import questions
-wrangler d1 execute testament-db --file=./questions.seed.sql
+wrangler d1 execute arkived-db --file=./questions.seed.sql
 ```
 
 Or use the D1 HTTP API from a script.

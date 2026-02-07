@@ -240,7 +240,7 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
         <div className="mt-20 pt-8 border-t border-paper-cream/20 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="font-serif font-semibold text-paper-cream text-lg">
-              Testament
+              Arkived
             </span>
             <span className="date-stamp !text-paper-cream !border-paper-cream/50">v1.0</span>
           </div>

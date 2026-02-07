@@ -131,7 +131,7 @@
     },
     {
       "type": "PROJECT_RENAME",
-      "content": "Project renamed from 'ExamArchive' to 'Testament'. Name chosen for scalability across courses and majors, catchy and memorable while conveying the idea of preserved exam knowledge. Repository at https://github.com/clawdbotinstaller/exam-prep-platform.",
+      "content": "Project renamed from 'ExamArchive' to 'Testament' to 'Arkived'. Arkived chosen for archive/preservation concept, available domain (arkived.org), and brandable sound. Previous name Testament was already trademarked.",
       "context": "exam-prep-platform branding",
       "confidence": 0.95,
       "timestamp": "2026-02-06"
@@ -194,8 +194,8 @@
     }
   ],
   "current_project": {
-    "name": "Testament",
-    "former_names": ["ExamArchive", "CalcPrep", "Exam Prep Platform"],
+    "name": "Arkived",
+    "former_names": ["Testament", "ExamArchive", "CalcPrep", "Exam Prep Platform"],
     "phase": "Worker Initialized, Frontend Landing Page Complete",
     "description": "Real exam questions from real university exams - organized by topic with step-by-step solutions",
     "repository": "https://github.com/clawdbotinstaller/exam-prep-platform",
@@ -324,7 +324,8 @@
   },
   "session_context": {
     "completed_today": [
-      "Renamed project from ExamArchive to Testament",
+      "Renamed project from ExamArchive to Testament to Arkived",
+      "Updated all files with new name Arkived",
       "Organized GitHub repository - removed clutter",
       "Initialized Cloudflare Worker with D1 database",
       "Set up CI/CD workflows for frontend and worker",

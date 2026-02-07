@@ -1,5 +1,5 @@
 -- MTH240 Exam Questions Import (5 exams, 33 questions)
--- Run with: wrangler d1 execute testament-db --remote --file=./scripts/seed-mth240.sql
+-- Run with: wrangler d1 execute arkived-db --remote --file=./scripts/seed-mth240.sql
 
 -- Insert exams
 INSERT OR IGNORE INTO exams (id, course_id, course_code, year, semester, exam_type, total_points, exam_date, difficulty_label) VALUES

@@ -18,7 +18,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.use('*', logger());
 app.use('*', poweredBy());
 app.use('*', cors({
-  origin: ['http://localhost:5173', 'https://testament.app'],
+  origin: ['http://localhost:5173', 'https://arkived.org', 'https://www.arkived.org'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -27,7 +27,7 @@ app.use('*', cors({
 // Health check
 app.get('/', (c) => {
   return c.json({
-    name: 'Testament API',
+    name: 'Arkived API',
     version: '1.0.0',
     environment: c.env.ENVIRONMENT,
     status: 'healthy',
@@ -523,6 +523,198 @@ app.get('/api/courses/:id/analysis', requireAuth, async (c) => {
   });
 });
 
+// Detailed Analysis (unified topic analysis hub - costs 2 credits)
+app.get('/api/courses/:id/analysis-detailed', requireAuth, async (c) => {
+  const userId = c.get('userId');
+  const courseId = c.req.param('id');
+  const db = c.env.DB;
+
+  const user = await ensureMonthlyCredits(db, userId);
+  if (!user) return c.json({ error: 'Not found' }, 404);
+
+  // Check credits
+  if (user.plan !== 'unlimited' && user.credits < 2) {
+    return c.json({ error: 'Insufficient credits', credits_needed: 2, credits_available: user.credits }, 402);
+  }
+
+  // Deduct credits (idempotent check would need session tracking - simplified here)
+  if (user.plan !== 'unlimited') {
+    await db.prepare('UPDATE users SET credits = credits - 2 WHERE id = ?').bind(userId).run();
+    await db.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(crypto.randomUUID(), userId, -2, 'analysis_detailed', 'Detailed topic analysis', nowTs())
+      .run();
+  }
+
+  try {
+    // Get total exam count for frequency calculation
+    const examCountResult = await db.prepare('SELECT COUNT(*) as count FROM exams WHERE course_id = ?').bind(courseId).first<{ count: number }>();
+    const totalExams = examCountResult?.count ?? 1;
+
+    // Get all questions with their techniques and section data
+    const questionsResult = await db.prepare(`
+      SELECT q.id, q.section, q.techniques, q.difficulty, q.estimated_time, q.topic_id,
+             e.year, e.semester, e.exam_type, q.question_text, q.points
+      FROM questions q
+      LEFT JOIN exams e ON q.exam_id = e.id
+      WHERE q.course_id = ?
+    `).bind(courseId).all();
+
+    const questions = (questionsResult.results ?? []) as any[];
+
+    // Section to chapter mapping
+    const sectionToChapter: Record<string, { chapterId: string; chapterNum: string; chapterName: string; sectionName: string }> = {
+      '3.1': { chapterId: 'integration', chapterNum: '3', chapterName: 'Integration', sectionName: 'Integration by Parts' },
+      '3.2': { chapterId: 'integration', chapterNum: '3', chapterName: 'Integration', sectionName: 'Trigonometric Integrals' },
+      '3.3': { chapterId: 'integration', chapterNum: '3', chapterName: 'Integration', sectionName: 'Trigonometric Substitution' },
+      '3.4': { chapterId: 'integration', chapterNum: '3', chapterName: 'Integration', sectionName: 'Partial Fractions' },
+      '3.7': { chapterId: 'integration', chapterNum: '3', chapterName: 'Integration', sectionName: 'Improper Integrals' },
+      '4.1': { chapterId: 'differential_equations', chapterNum: '4', chapterName: 'Differential Equations', sectionName: 'Directly Integrable DEs' },
+      '4.2': { chapterId: 'differential_equations', chapterNum: '4', chapterName: 'Differential Equations', sectionName: 'Separable DEs' },
+      '4.5': { chapterId: 'differential_equations', chapterNum: '4', chapterName: 'Differential Equations', sectionName: 'First-Order Linear DEs' },
+    };
+
+    // Build nested structure
+    const chaptersMap = new Map<string, any>();
+    const sectionsMap = new Map<string, any>();
+    const techniquesMap = new Map<string, any>();
+
+    for (const q of questions) {
+      const section = q.section;
+      if (!section || !sectionToChapter[section]) continue;
+
+      const sectionMeta = sectionToChapter[section];
+      const chapterId = sectionMeta.chapterId;
+
+      // Initialize chapter
+      if (!chaptersMap.has(chapterId)) {
+        chaptersMap.set(chapterId, {
+          id: chapterId,
+          name: sectionMeta.chapterName,
+          chapterNum: sectionMeta.chapterNum,
+          totalQuestions: 0,
+          frequencyScore: 0,
+          sections: [],
+          sectionIds: new Set(),
+        });
+      }
+      const chapter = chaptersMap.get(chapterId);
+      chapter.totalQuestions++;
+      chapter.sectionIds.add(section);
+
+      // Initialize section
+      const sectionKey = `${chapterId}_${section}`;
+      if (!sectionsMap.has(sectionKey)) {
+        const newSection = {
+          id: sectionMeta.sectionName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z_]/g, ''),
+          name: sectionMeta.sectionName,
+          sectionNum: section,
+          totalQuestions: 0,
+          avgDifficulty: 0,
+          avgTime: 0,
+          frequency: 0,
+          techniques: [],
+          techniqueIds: new Set(),
+          difficultySum: 0,
+          timeSum: 0,
+          examIds: new Set(),
+        };
+        sectionsMap.set(sectionKey, newSection);
+        chapter.sections.push(newSection);
+      }
+      const sectionData = sectionsMap.get(sectionKey);
+      sectionData.totalQuestions++;
+      sectionData.difficultySum += q.difficulty ?? 3;
+      sectionData.timeSum += q.estimated_time ?? 8;
+      if (q.year) sectionData.examIds.add(`${q.year}_${q.semester}_${q.exam_type}`);
+
+      // Parse techniques
+      let techniques: string[] = [];
+      try {
+        if (q.techniques) {
+          techniques = JSON.parse(q.techniques);
+        }
+      } catch {
+        // Skip malformed techniques
+      }
+
+      for (const techId of techniques) {
+        const techKey = `${sectionKey}_${techId}`;
+        if (!techniquesMap.has(techKey)) {
+          const newTech = {
+            id: techId,
+            count: 0,
+            sampleQuestions: [],
+          };
+          techniquesMap.set(techKey, newTech);
+          sectionData.techniques.push(newTech);
+          sectionData.techniqueIds.add(techId);
+        }
+        const techData = techniquesMap.get(techKey);
+        techData.count++;
+
+        // Add sample question (max 3 per technique)
+        if (techData.sampleQuestions.length < 3) {
+          techData.sampleQuestions.push({
+            id: q.id,
+            question_text: q.question_text,
+            difficulty: q.difficulty,
+            points: q.points,
+            year: q.year,
+            semester: q.semester,
+            exam_type: q.exam_type,
+          });
+        }
+      }
+    }
+
+    // Calculate averages and frequencies
+    for (const chapter of chaptersMap.values()) {
+      for (const section of chapter.sections) {
+        section.avgDifficulty = section.totalQuestions > 0
+          ? Math.round((section.difficultySum / section.totalQuestions) * 10) / 10
+          : 0;
+        section.avgTime = section.totalQuestions > 0
+          ? Math.round(section.timeSum / section.totalQuestions)
+          : 0;
+        section.frequency = Math.min(1, section.examIds.size / totalExams);
+
+        // Clean up temp fields
+        delete section.difficultySum;
+        delete section.timeSum;
+        delete section.examIds;
+        delete section.techniqueIds;
+      }
+
+      // Calculate chapter frequency as average of section frequencies
+      const sectionFreqs = chapter.sections.map((s: any) => s.frequency);
+      chapter.frequencyScore = sectionFreqs.length > 0
+        ? Math.round((sectionFreqs.reduce((a: number, b: number) => a + b, 0) / sectionFreqs.length) * 100) / 100
+        : 0;
+
+      delete chapter.sectionIds;
+    }
+
+    // Convert Maps to arrays and sort
+    const chapters = Array.from(chaptersMap.values()).sort((a, b) =>
+      parseInt(a.chapterNum) - parseInt(b.chapterNum)
+    );
+
+    for (const chapter of chapters) {
+      chapter.sections.sort((a: any, b: any) =>
+        parseFloat(a.sectionNum) - parseFloat(b.sectionNum)
+      );
+    }
+
+    return c.json({
+      credits_deducted: user.plan === 'unlimited' ? 0 : 2,
+      chapters: chapters,
+    });
+  } catch (error) {
+    console.error('Detailed analysis error:', error);
+    return c.json({ error: 'Failed to generate analysis', details: String(error) }, 500);
+  }
+});
+
 // Topics
 app.get('/api/courses/:id/topics', requireAuth, async (c) => {
   const courseId = c.req.param('id');
@@ -616,7 +808,7 @@ app.post('/api/questions/bundle', requireAuth, async (c) => {
 
 // Practice questions (1 credit per question)
 app.post('/api/questions/practice', requireAuth, async (c) => {
-  const body = await json<{ course_id?: string; topic_ids?: string[]; count?: number }>(c);
+  const body = await json<{ course_id?: string; topic_ids?: string[]; technique?: string; count?: number }>(c);
   const count = body.count ?? 3;
   if (!body.course_id) return c.json({ error: 'Missing course_id' }, 400);
 
@@ -636,7 +828,20 @@ app.post('/api/questions/practice', requireAuth, async (c) => {
   }
 
   let results;
-  if (body.topic_ids && body.topic_ids.length > 0) {
+
+  // Technique filtering - filter questions where techniques JSON array contains the technique
+  if (body.technique) {
+    const stmt = c.env.DB.prepare(`
+      SELECT q.*, t.name as topic_name
+      FROM questions q
+      LEFT JOIN topics t ON q.topic_id = t.id
+      WHERE q.course_id = ? AND q.techniques LIKE ?
+      ORDER BY RANDOM()
+      LIMIT ?
+    `).bind(body.course_id, `%"${body.technique}"%`, count);
+    results = await stmt.all();
+  }
+  else if (body.topic_ids && body.topic_ids.length > 0) {
     const placeholders = body.topic_ids.map(() => '?').join(',');
     const stmt = c.env.DB.prepare(
       `SELECT q.*, t.name as topic_name FROM questions q LEFT JOIN topics t ON q.topic_id = t.id WHERE q.course_id = ? AND q.topic_id IN (${placeholders}) ORDER BY RANDOM() LIMIT ?`

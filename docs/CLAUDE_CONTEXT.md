@@ -1,7 +1,7 @@
-# Testament - Claude Context
+# Arkived - Claude Context
 
 ## Project Summary
-**Testament** (formerly Calc2Archive) - Real exam questions from real university exams.
+**Arkived** (formerly Calc2Archive/Testament) - Real exam questions from real university exams.
 
 **Repository:** `https://github.com/clawdbotinstaller/exam-prep-platform`
 
@@ -72,7 +72,7 @@ exam-prep-platform/
 - Repository organized (removed clutter, added README)
 - Worker initialized with full database schema
 - GitHub Actions workflows added
-- Project renamed to Testament
+- Project renamed to Arkived
 
 ## Semantic Memory
 Full export saved to: `SEMANTIC_MEMORY_EXPORT.json`

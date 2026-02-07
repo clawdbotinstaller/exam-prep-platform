@@ -1,14 +1,14 @@
 # Codex Implementation Guide: Frontend Pages
 
 > **For:** Codex (or any AI coding agent)
-> **Project:** Testament - Exam Prep Platform
+> **Project:** Arkived - Exam Prep Platform
 > **Last Updated:** 2026-02-06
 
 ---
 
 ## Overview
 
-This guide provides step-by-step instructions for implementing the remaining frontend pages for Testament. The landing page is already complete - you need to build the authenticated application pages.
+This guide provides step-by-step instructions for implementing the remaining frontend pages for Arkived. The landing page is already complete - you need to build the authenticated application pages.
 
 ## Current State
 
@@ -602,7 +602,7 @@ export default function DashboardPage() {
       <header className="bg-paper-cream border-b border-pencil-gray/10 sticky top-0 z-50">
         <div className="px-8 lg:px-[8vw] py-4 flex items-center justify-between">
           <Link to="/dashboard" className="font-serif font-semibold text-ink-black text-xl">
-            Testament
+            Arkived
           </Link>
 
           <div className="flex items-center gap-6">
@@ -1816,7 +1816,7 @@ export default function UpgradePage() {
       {/* Header */}
       <header className="bg-paper-cream border-b border-pencil-gray/10 px-8 lg:px-[8vw] py-4">
         <Link to="/dashboard" className="font-serif font-semibold text-ink-black text-xl">
-          Testament
+          Arkived
         </Link>
       </header>
 
@@ -2033,7 +2033,7 @@ export default function ProfilePage() {
             <ArrowLeft className="w-4 h-4" />
             <span className="font-sans text-sm">Back to Dashboard</span>
           </Link>
-          <span className="font-serif font-semibold text-ink-black">Testament</span>
+          <span className="font-serif font-semibold text-ink-black">Arkived</span>
         </div>
       </header>
 
