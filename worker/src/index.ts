@@ -401,32 +401,27 @@ app.post('/api/admin/create-test-users', async (c) => {
     // Test user with free plan (5 credits)
     await db.prepare(`
       INSERT OR IGNORE INTO users
-      (id, name, email, password_hash, credits, plan, monthly_credits, credits_reset_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      (id, email, password_hash, credits, has_unlimited, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `).bind(
       'test-user-free',
-      'Test User (Free)',
       'test@example.com',
       '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // 'test123'
       5,
-      'free',
-      5,
-      Math.floor(Date.now() / 1000) + 30 * 24 * 3600
+      0
     ).run();
 
     // Test user with unlimited plan
     await db.prepare(`
       INSERT OR IGNORE INTO users
-      (id, name, email, password_hash, credits, plan, monthly_credits, credits_reset_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      (id, email, password_hash, credits, has_unlimited, unlimited_until, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `).bind(
       'test-user-unlimited',
-      'Test User (Unlimited)',
       'unlimited@example.com',
       '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // 'test123'
       999,
-      'unlimited',
-      999,
+      1,
       Math.floor(Date.now() / 1000) + 365 * 24 * 3600
     ).run();
 
