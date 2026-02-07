@@ -37,7 +37,6 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
 
   const [activeFilter, setActiveFilter] = useState('All');
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,7 +69,6 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
         }));
 
         setQuestions(mappedQuestions);
-        setTopics(topicsData.topics || []);
       } catch (err) {
         console.error('Failed to load archive data:', err);
         setError('Failed to load questions');
