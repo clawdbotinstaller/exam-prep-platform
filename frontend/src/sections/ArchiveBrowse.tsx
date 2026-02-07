@@ -136,7 +136,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
             <h2 className="font-serif font-semibold text-ink-black text-2xl lg:text-3xl">
               The Actual Questions
             </h2>
-            <span className="date-stamp">80+ from 2022–2024</span>
+            <span className="date-stamp">80+ questions, 5 years</span>
           </div>
           <p className="font-sans text-pencil-gray text-sm lg:text-base max-w-xl mb-4">
             These are not practice problems. They're what your professor handed out,
@@ -252,8 +252,14 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
               <Link to="/signup" className="btn-blueprint inline-flex items-center justify-center">
                 See Full Solutions
               </Link>
-              <button className="inline-flex items-center justify-center gap-2 px-5 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors">
-                Learn More
+              <button
+                onClick={() => {
+                  const el = document.getElementById('about');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors"
+              >
+                See How It Works
               </button>
             </div>
           </div>

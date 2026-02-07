@@ -235,12 +235,66 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
                     <div className="math-line">
                       <div className="w-full h-px bg-pencil-gray/20 my-6" />
                       <div className="bg-paper-aged/50 p-4 rounded border-l-2 border-blueprint-navy">
-                        <p className="font-condensed text-[10px] uppercase tracking-widest text-blueprint-navy mb-2">
-                          Solution
-                        </p>
-                        <p className="font-sans text-ink-black text-sm leading-relaxed whitespace-pre-line">
-                          {question.solution_steps}
-                        </p>
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="font-condensed text-[10px] uppercase tracking-widest text-blueprint-navy">
+                            Step-by-Step Solution
+                          </p>
+                          <span className="font-condensed text-[10px] text-pencil-gray">
+                            Step 1 of {question.solution_steps?.split(/\n|\\n/).filter((s: string) => s.trim()).length || 1}
+                          </span>
+                        </div>
+
+                        {/* Parse solution steps */}
+                        {(() => {
+                          const steps = question.solution_steps
+                            ?.split(/\n|\\n/)
+                            .map((s: string) => s.trim())
+                            .filter((s: string) => s.length > 0) || [];
+
+                          // Show first step clearly
+                          const firstStep = steps[0] || question.solution_steps || 'Solution not available';
+                          const remainingSteps = steps.slice(1);
+
+                          return (
+                            <div className="space-y-3">
+                              {/* First step - clearly visible */}
+                              <div className="bg-paper-cream p-3 rounded border border-blueprint-navy/20">
+                                <span className="font-mono text-blueprint-navy text-xs font-bold mr-2">Step 1:</span>
+                                <p className="font-sans text-ink-black text-sm leading-relaxed inline">
+                                  {firstStep.replace(/^Step \d+[:.]?\s*/, '')}
+                                </p>
+                              </div>
+
+                              {/* Remaining steps - blurred */}
+                              {remainingSteps.length > 0 && (
+                                <div className="relative">
+                                  <div className="blur-[3px] opacity-60 select-none space-y-2">
+                                    {remainingSteps.slice(0, 2).map((step: string, idx: number) => (
+                                      <div key={idx} className="bg-paper-cream/50 p-3 rounded">
+                                        <span className="font-mono text-blueprint-navy/50 text-xs font-bold mr-2">
+                                          Step {idx + 2}:
+                                        </span>
+                                        <p className="font-sans text-ink-black/50 text-sm leading-relaxed inline">
+                                          {step.replace(/^Step \d+[:.]?\s*/, '').substring(0, 60)}...
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  {/* Overlay to encourage signup */}
+                                  <div className="absolute inset-0 flex items-center justify-center bg-paper-cream/30 backdrop-blur-[1px]">
+                                    <Link
+                                      to="/signup"
+                                      className="bg-blueprint-navy text-paper-cream px-4 py-2 rounded-sm font-condensed text-xs uppercase tracking-widest hover:bg-highlighter-yellow hover:text-blueprint-navy transition-colors shadow-lg"
+                                    >
+                                      Sign Up to See All Steps
+                                    </Link>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}

@@ -172,7 +172,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
 
             {/* Feature pills */}
             <div className="flex flex-wrap gap-2 mb-8">
-              {['Real exam questions', 'Hand-written solutions', 'Pattern-matched'].map((item) => (
+              {['Real exam questions', 'Step-by-step solutions', 'Pattern-matched'].map((item) => (
                 <span key={item} className="topic-tag text-[10px]">
                   {item}
                 </span>
@@ -199,10 +199,10 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
           </div>
 
           {/* Right content - Image card */}
-          <div className="lg:w-[40vw] lg:max-w-xl">
+          <div className="lg:w-[40vw] lg:max-w-xl lg:mt-20">
             <div
               ref={imageRef}
-              className="index-card overflow-hidden aspect-[4/3] lg:aspect-auto lg:h-[56vh] relative"
+              className="index-card overflow-hidden aspect-[4/3] lg:aspect-auto lg:h-[52vh] relative"
             >
               <img
                 src="/hero-exam.jpg"

@@ -52,11 +52,11 @@ export default function TopicBreakdown({ className = '' }: TopicBreakdownProps) 
         console.error('Failed to load topics:', err);
         // Fallback to hardcoded topics
         setTopics([
-          { id: '1', name: 'Integration Techniques', question_count: 8, percentage: 85 },
-          { id: '2', name: 'Sequences & Series', question_count: 6, percentage: 72 },
-          { id: '3', name: 'Differential Equations', question_count: 5, percentage: 68 },
-          { id: '4', name: 'Applications (Area/Volume)', question_count: 4, percentage: 64 },
-          { id: '5', name: 'Parametric / Polar', question_count: 3, percentage: 45 },
+          { id: '1', name: 'Integration by Parts', question_count: 8, percentage: 85 },
+          { id: '2', name: 'Trigonometric Integrals', question_count: 6, percentage: 72 },
+          { id: '3', name: 'Partial Fractions', question_count: 5, percentage: 68 },
+          { id: '4', name: 'Differential Equations', question_count: 4, percentage: 64 },
+          { id: '5', name: 'Improper Integrals', question_count: 3, percentage: 45 },
         ]);
       } finally {
         setLoading(false);

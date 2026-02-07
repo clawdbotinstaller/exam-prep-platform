@@ -250,11 +250,11 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
         </div>
 
         {/* Technical drawing footer */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-paper-cream/10 mt-4">
-          <div className="font-mono text-[8px] text-paper-cream/40 uppercase tracking-tighter">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-paper-cream/20 mt-4">
+          <div className="font-mono text-[10px] text-paper-cream/70 uppercase tracking-tighter">
             Drawing No. CALC-II-2024-REF // Technical Document // No. 0082-C2
           </div>
-          <div className="flex items-center gap-6 font-mono text-[8px] text-paper-cream/60">
+          <div className="flex items-center gap-6 font-mono text-[10px] text-paper-cream/80">
             <span>SYSTEM: STABLE</span>
             <span>DATA_STREAM: ACTIVE</span>
           </div>

@@ -26,8 +26,8 @@ export default function Navigation() {
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
         scrolled
-          ? 'bg-paper-cream/95 border-b border-pencil-gray/20'
-          : 'bg-transparent'
+          ? 'bg-paper-cream/95 border-b border-pencil-gray/20 shadow-sm'
+          : 'bg-paper-cream/80 backdrop-blur-sm border-b border-pencil-gray/10'
       }`}
     >
       <div className="flex items-center justify-between px-6 lg:px-12 py-4">

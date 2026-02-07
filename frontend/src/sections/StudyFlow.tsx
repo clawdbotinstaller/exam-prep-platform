@@ -12,24 +12,24 @@ interface StudyFlowProps {
 const steps = [
   {
     number: '01',
-    title: 'Run topic analysis',
-    description: 'See what repeats most and why. Costs 2 credits.',
+    title: 'Browse the archive',
+    description: 'Explore 80+ real exam questions from the past 5 years. Filter by topic, difficulty, or exam type to find exactly what you need to practice.',
     icon: Target,
-    math: '2 cr',
+    math: 'Free',
   },
   {
     number: '02',
-    title: 'Practice by pattern',
-    description: 'Generate 3-question bundles per topic. Costs 1 credit.',
+    title: 'Try it yourself first',
+    description: 'Attempt the problem under exam conditions. Write out your full solution before checking the answer—this builds the pattern recognition you need.',
     icon: BookCheck,
-    math: '3 Qs',
+    math: 'Practice',
   },
   {
     number: '03',
-    title: 'Simulate a midterm',
-    description: 'Take a realistic midterm (easy / sample / hard). Costs 3 credits.',
+    title: 'Compare with step-by-step',
+    description: 'View detailed worked solutions broken down by technique. Identify where you went wrong and learn the most efficient approach for next time.',
     icon: Timer,
-    math: '3 cr',
+    math: 'Learn',
   },
 ];
 
@@ -130,7 +130,7 @@ export default function StudyFlow({ className = '' }: StudyFlowProps) {
             ref={titleRef}
             className="font-serif font-semibold text-ink-black text-3xl lg:text-4xl max-w-lg"
           >
-            How to use this archive
+            How to use <span className="font-serif italic text-blueprint-navy tracking-tight">arkive</span>
           </h2>
           <span className="date-stamp">Method</span>
         </div>
@@ -179,10 +179,10 @@ export default function StudyFlow({ className = '' }: StudyFlowProps) {
         {/* Stats row */}
         <div ref={statsRef} className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mt-12 lg:mt-16 pt-12 border-t border-pencil-gray/20">
           {[
-            { value: '5', label: 'Free credits / month' },
-            { value: '15', label: '$10 plan credits' },
-            { value: 'Unlimited', label: '$20 plan access' },
-            { value: '3', label: 'Years covered' },
+            { value: '80+', label: 'Real exam questions' },
+            { value: '5', label: 'Years covered' },
+            { value: '8', label: 'Core topics' },
+            { value: '100%', label: 'Free to browse' },
           ].map((stat) => (
             <div key={stat.label} className="stat-item text-center lg:text-left">
               <div className="font-mono font-medium text-blueprint-navy text-3xl lg:text-4xl mb-1">
