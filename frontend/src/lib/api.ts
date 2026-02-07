@@ -1,4 +1,5 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+// Use relative URLs when served from same domain (Worker), absolute for local dev
+export const API_URL = import.meta.env.VITE_API_URL || '';
 
 const authHeaders = (): Record<string, string> => {
   const token = localStorage.getItem('session');
