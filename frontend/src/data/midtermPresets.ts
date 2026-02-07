@@ -1,6 +1,18 @@
 /**
  * Preset configurations for midterm generation
  * Based on analysis of 33 questions from 5 exams (2015-2025)
+ *
+ * MIDTERM TOPIC COVERAGE (8 sections):
+ * Chapter 3 - Techniques of Integration:
+ *   3.1 Integration by Parts
+ *   3.2 Trigonometric Integrals
+ *   3.3 Trigonometric Substitution
+ *   3.4 Integration of Rational Functions by Partial Fractions
+ *   3.7 Improper Integrals
+ * Chapter 4 - Differential Equations:
+ *   4.1 Directly Integrable Differential Equations
+ *   4.2 Separable Differential Equations
+ *   4.5 First-order Linear Differential Equations
  */
 
 import type { PresetConfig } from '../types/midterm';
@@ -144,13 +156,13 @@ export const PRESETS: Record<string, PresetConfig> = {
 
   /**
    * Exam Simulation
-   * Matches real exam structure as closely as possible
+   * Matches real exam structure covering all 8 midterm topics
    * Best for: Realistic exam practice
    */
   exam: {
     id: 'exam',
     name: 'Exam Simulation',
-    description: 'Matches real exam structure. Most realistic practice experience with timed conditions.',
+    description: 'Covers all 8 midterm topics: Integration by Parts, Trig Integrals, Trig Substitution, Partial Fractions, Improper Integrals, and Differential Equations. Most realistic practice experience.',
     icon: 'ClipboardCheck',
     color: 'bg-green-600',
     weights: {
