@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'worker/**'
+      - 'frontend/**'
   workflow_dispatch:
 
 jobs:
@@ -20,7 +21,18 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Copy frontend to worker public folder
+        run: cp -r ./frontend/dist/* ./worker/public/
+
+      - name: Install worker dependencies
         working-directory: ./worker
         run: npm ci
 
