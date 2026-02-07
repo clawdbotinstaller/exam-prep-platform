@@ -89,7 +89,7 @@ curl -X POST http://localhost:8787/api/admin/seed-mth240
 - `GET /api/questions/:id` - Get single question
 - `POST /api/questions/practice` - Get practice questions (1 credit/question)
 - `POST /api/questions/bundle` - Get 3 questions (1 credit)
-- `POST /api/midterm/generate` - Generate practice midterm (3 credits)
+- `POST /api/midterm/generate` - Generate practice midterm (2-4 credits, variable by preset)
 
 #### Credits
 - `GET /api/credits/balance` - Get credit balance
@@ -153,28 +153,49 @@ exam-prep-platform/
 - Frontend deploys on pushes to `frontend/**`
 - Requires: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
 
-## Recent Changes (Unified Topic Analysis)
+## Recent Changes (Hybrid Smart Presets Midterm System)
 
 ### New Files
-- `frontend/src/types/analysis.ts` - TypeScript interfaces
-- `frontend/src/data/techniqueMetadata.ts` - Technique metadata (25+ techniques)
+- `frontend/src/types/midterm.ts` - TypeScript interfaces for midterm system
+- `frontend/src/data/midtermPresets.ts` - 6 preset configurations
+- `frontend/src/lib/midtermStorage.ts` - localStorage for custom configs
+- `frontend/src/components/MidtermSelector.tsx` - Preset selection UI
+- `frontend/src/components/MidtermCustomizer.tsx` - Customization modal
 
 ### Modified Files
+- `worker/src/index.ts` - Updated `/midterm/generate` with weighted scoring algorithm
+- `frontend/src/pages/course/CourseArchive.tsx` - Added Midterms/Finals tabs + integration
+
+### 6 Smart Presets
+| Preset | Credits | Questions | Duration | Focus |
+|--------|---------|-----------|----------|-------|
+| Cram Mode | 2 | 5 | 45 min | Recent material |
+| Balanced Practice | 3 | 7 | 75 min | Well-rounded mix |
+| Weakness Drill | 3 | 10 | 90 min | Target weak areas |
+| Technique Mastery | 3 | 8 | 60 min | Drill specific techniques |
+| Exam Simulation | 3 | 7 | 90 min | Realistic exam conditions |
+| Comprehensive Review | 4 | 10 | 120 min | Thorough coverage |
+
+### Weighted Scoring Algorithm
+4 configurable weight factors:
+- **Recency** (0-100): Prioritize questions from recent exams (2024-2025)
+- **Repetition** (0-100): Reward questions appearing across multiple years
+- **Coverage** (0-100): Ensure all sections represented
+- **Difficulty** (0-100): Match target difficulty level
+
+### Previous Changes (Unified Topic Analysis)
+- `frontend/src/types/analysis.ts` - TypeScript interfaces
+- `frontend/src/data/techniqueMetadata.ts` - Technique metadata (25+ techniques)
 - `worker/src/index.ts` - Added `/analysis-detailed` endpoint + technique filtering
 - `frontend/src/pages/course/CourseAnalysis.tsx` - Complete rewrite with unified hub
-- `frontend/src/pages/course/CoursePractice.tsx` - Added technique filtering support
-
-### Data Source
-All technique traps and strategies based on analysis of:
-- 33 MTH240 exam questions
-- 5 exams from 2015-2025
-- Real student performance patterns
 
 ## Next Steps (When Resuming)
 1. **Deploy:** Run GitHub Actions to deploy worker + frontend
-2. **Test:** Verify full flow: Analysis → Expand → Practice
-3. **Data:** Add more exam questions to increase technique coverage
-4. **Analytics:** Track which techniques students struggle with most
+2. **Test:** Verify full flow: Midterm Selection → Customization → Generation
+3. **Data:** Add more exam questions (currently 33, target 200+)
+4. **Expand Curriculum:** Add sections 4.3 (Separable Equations), 3.5, 3.6
+5. **Analytics:** Track preset usage, credit consumption patterns
+6. **Stripe Integration:** Complete payment flow for unlimited access
 
 ## Semantic Memory
 Full export saved to: `SEMANTIC_MEMORY_EXPORT.json`

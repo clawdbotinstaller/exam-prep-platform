@@ -10,7 +10,7 @@ import {
   Trash2,
   Settings,
 } from 'lucide-react';
-import type { PresetConfig, MidtermWeightingConfig, SavedMidtermConfig } from '../types/midterm';
+import type { PresetConfig, SavedMidtermConfig } from '../types/midterm';
 import { PRESETS, PRESET_METADATA } from '../data/midtermPresets';
 import { loadCustomConfigs, deleteCustomConfig } from '../lib/midtermStorage';
 
