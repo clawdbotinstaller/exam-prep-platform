@@ -47,12 +47,12 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
       try {
         setLoading(true);
 
-        // Fetch questions
-        const questionsRes = await fetch(`${API_URL}/api/questions?limit=20`);
+        // Fetch questions (public endpoint for landing page)
+        const questionsRes = await fetch(`${API_URL}/api/questions/public?course_id=calc2&limit=20`);
         if (!questionsRes.ok) throw new Error('Failed to fetch questions');
         const questionsData = await questionsRes.json();
 
-        // Fetch topics for mapping
+        // Fetch topics for mapping (public endpoint)
         const topicsRes = await fetch(`${API_URL}/api/topics`);
         if (!topicsRes.ok) throw new Error('Failed to fetch topics');
         const topicsData = await topicsRes.json();

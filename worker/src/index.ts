@@ -35,6 +35,85 @@ app.get('/api/health', (c) => {
   });
 });
 
+// Public topics list for landing page (no auth required)
+app.get('/api/topics', async (c) => {
+  const topics = await c.env.DB.prepare(`
+    SELECT t.*, COUNT(q.id) as question_count
+    FROM topics t
+    LEFT JOIN questions q ON t.id = q.topic_id
+    WHERE t.course_id = 'calc2'
+    GROUP BY t.id
+    ORDER BY t.frequency_score DESC
+  `).all();
+
+  return c.json({ topics: topics.results ?? [] });
+});
+
+// Public questions for landing page (no auth required)
+app.get('/api/questions/public', async (c) => {
+  const limit = Number(c.req.query('limit') ?? 20);
+  const courseId = c.req.query('course_id') || 'calc2';
+
+  const results = await c.env.DB.prepare(`
+    SELECT q.*, t.name as topic_name
+    FROM questions q
+    LEFT JOIN topics t ON q.topic_id = t.id
+    WHERE q.course_id = ?
+    ORDER BY q.source_exam_year DESC, q.difficulty ASC
+    LIMIT ?
+  `).bind(courseId, limit).all();
+
+  return c.json({ questions: results.results ?? [] });
+});
+
+// Public topic detail for landing page (no auth required)
+app.get('/api/topics/:topicId/public', async (c) => {
+  const topicId = c.req.param('topicId');
+  const db = c.env.DB;
+
+  // Get topic info
+  const topic = await db.prepare('SELECT * FROM topics WHERE id = ?').bind(topicId).first<any>();
+  if (!topic) return c.json({ error: 'Topic not found' }, 404);
+
+  // Get sample questions for this topic
+  const questionsResult = await db.prepare(`
+    SELECT q.*, e.year, e.semester, e.exam_type
+    FROM questions q
+    LEFT JOIN exams e ON q.exam_id = e.id
+    WHERE q.topic_id = ?
+    ORDER BY q.difficulty ASC
+    LIMIT 5
+  `).bind(topicId).all();
+
+  // Get frequency stats
+  const topicAppearances = await db.prepare('SELECT COUNT(*) as count FROM questions WHERE topic_id = ?').bind(topicId).first<{ count: number }>();
+
+  // Calculate average difficulty and points
+  const stats = await db.prepare(`
+    SELECT AVG(difficulty) as avg_difficulty, AVG(points) as avg_points
+    FROM questions WHERE topic_id = ?
+  `).bind(topicId).first<any>();
+
+  return c.json({
+    topic: {
+      ...topic,
+      appearances: topicAppearances?.count ?? 0,
+      avgDifficulty: Math.round(stats?.avg_difficulty ?? 3),
+      avgPoints: Math.round(stats?.avg_points ?? 10),
+    },
+    questions: questionsResult.results ?? [],
+    analysis: {
+      frequency: topicAppearances?.count ?? 0,
+      avgDifficulty: Math.round(stats?.avg_difficulty ?? 3),
+      avgPoints: Math.round(stats?.avg_points ?? 10),
+      studyTips: [
+        `Focus on ${topic.name} patterns that appear across multiple exams.`,
+        `Practice ${topicAppearances?.count ?? 0} available questions to master this topic.`,
+      ],
+    },
+  });
+});
+
 const json = async <T>(c: any): Promise<T> => {
   try {
     return await c.req.json();
@@ -773,7 +852,22 @@ app.get('/api/courses/:id/analysis-detailed', requireAuth, async (c) => {
   }
 });
 
-// Topics
+// Public topics list (no auth) - MUST be before /api/courses/:id/topics
+app.get('/api/courses/:id/topics/public', async (c) => {
+  const courseId = c.req.param('id');
+  const topics = await c.env.DB.prepare(`
+    SELECT t.*, COUNT(q.id) as question_count
+    FROM topics t
+    LEFT JOIN questions q ON t.id = q.topic_id
+    WHERE t.course_id = ?
+    GROUP BY t.id
+    ORDER BY t.frequency_score DESC
+  `).bind(courseId).all();
+
+  return c.json({ topics: topics.results ?? [] });
+});
+
+// Topics (auth required)
 app.get('/api/courses/:id/topics', requireAuth, async (c) => {
   const courseId = c.req.param('id');
   const topics = await c.env.DB.prepare('SELECT * FROM topics WHERE course_id = ?').bind(courseId).all();
@@ -1212,21 +1306,6 @@ app.get('/api/courses/:id/questions', requireAuth, async (c) => {
   ).bind(courseId, limit).all();
 
   return c.json({ questions: results.results ?? [] });
-});
-
-// Public topics list (no auth)
-app.get('/api/courses/:id/topics/public', async (c) => {
-  const courseId = c.req.param('id');
-  const topics = await c.env.DB.prepare(`
-    SELECT t.*, COUNT(q.id) as question_count
-    FROM topics t
-    LEFT JOIN questions q ON t.id = q.topic_id
-    WHERE t.course_id = ?
-    GROUP BY t.id
-    ORDER BY t.frequency_score DESC
-  `).bind(courseId).all();
-
-  return c.json({ topics: topics.results ?? [] });
 });
 
 // Static file serving - serve frontend for all non-API routes
