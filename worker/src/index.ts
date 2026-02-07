@@ -543,8 +543,8 @@ app.post('/api/credits/purchase', requireAuth, async (c) => {
   return c.json({ checkout_url: 'https://checkout.stripe.com/placeholder', session_id: 'cs_test' });
 });
 
-// Courses
-app.get('/api/courses', requireAuth, async (c) => {
+// Courses (public endpoint - no auth required for discovery)
+app.get('/api/courses', async (c) => {
   const courses = await c.env.DB.prepare('SELECT * FROM courses WHERE is_active = 1').all();
   return c.json({ courses: courses.results ?? [] });
 });
@@ -938,6 +938,55 @@ app.get('/api/questions/:id', requireAuth, async (c) => {
     .first();
   if (!q) return c.json({ error: 'Not found' }, 404);
   return c.json({ question: q });
+});
+
+// Midterm presets configuration
+app.get('/api/midterm/presets', async (c) => {
+  return c.json({
+    presets: [
+      {
+        id: 'quick',
+        name: 'Quick Practice',
+        description: '5-6 questions, shorter time limits. Good for a quick study session.',
+        creditCost: 2,
+        questionCount: 6,
+        estimatedTime: 30,
+        difficultyDistribution: { easy: 50, medium: 40, hard: 10 },
+        color: 'emerald'
+      },
+      {
+        id: 'sample',
+        name: 'Sample Exam',
+        description: 'Matches real exam patterns from your professor\'s past exams.',
+        creditCost: 3,
+        questionCount: 8,
+        estimatedTime: 50,
+        difficultyDistribution: { easy: 25, medium: 50, hard: 25 },
+        color: 'blue'
+      },
+      {
+        id: 'hard',
+        name: 'Challenge Mode',
+        description: '7-8 harder questions with traps. For when you want to stress-test your knowledge.',
+        creditCost: 3,
+        questionCount: 8,
+        estimatedTime: 60,
+        difficultyDistribution: { easy: 10, medium: 40, hard: 50 },
+        color: 'amber'
+      },
+      {
+        id: 'custom',
+        name: 'Custom Mix',
+        description: 'Choose your sections and difficulty.',
+        creditCost: 4,
+        questionCount: 8,
+        estimatedTime: 50,
+        difficultyDistribution: { easy: 20, medium: 50, hard: 30 },
+        color: 'purple',
+        customizable: true
+      }
+    ]
+  });
 });
 
 // Practice midterm with configurable weights
