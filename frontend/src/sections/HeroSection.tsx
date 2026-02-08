@@ -160,9 +160,9 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
               ref={subheadRef}
               className="font-sans text-pencil-gray text-base lg:text-lg leading-relaxed mb-6 max-w-md"
             >
-              Your professor is not original. We found the patterns they recycle year after year—
-              the integration by parts setup, the ratio test they always tweak, the volume of revolution
-              that shows up every spring. Here's what they actually put on exams.
+              Your professor is not original. We found the patterns they recycle year after year:
+              the integration by parts setup, the trig substitution they always hide, the separable
+              differential equation that shows up every spring. Here's what they actually put on exams.
             </p>
 
             {/* Feature pills */}

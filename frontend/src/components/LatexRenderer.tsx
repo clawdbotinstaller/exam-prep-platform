@@ -100,15 +100,15 @@ function SafeBlockMath({ math }: { math: string }) {
 
 /**
  * Split text into parts, separating LaTeX expressions
- * Uses improved regex that handles nested dollar signs correctly
+ * Properly handles $...$ (inline) and $$...$$ (display) math
  */
 const parseLatexText = (text: string): Array<{ type: 'text' | 'latex' | 'display'; content: string }> => {
   const parts: Array<{ type: 'text' | 'latex' | 'display'; content: string }> = [];
   let currentIndex = 0;
 
-  // Improved regex: matches $$...$$ (display) or $...$ (inline)
-  // Handles nested dollar signs by matching non-dollar chars or escaped dollars
-  const regex = /\$\$([^$]|\$[^$])*\$\$|\$([^$]|\$[^$])*\$/g;
+  // Match $$...$$ (display math) first, then $...$ (inline math)
+  // Uses non-greedy matching to handle multiple expressions
+  const regex = /\$\$[\s\S]*?\$\$|\$[^\$\s][^$]*?\$/g;
   let match;
 
   while ((match = regex.exec(text)) !== null) {

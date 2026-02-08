@@ -27,7 +27,55 @@ interface Topic {
   name: string;
 }
 
-const filters = ['All', 'Integration', 'Series', 'DiffEq', 'Word Problems'];
+const filters = ['All', 'Integration', 'DiffEq'];
+
+// Topic categories for filtering
+const integrationTopics = [
+  'integration by parts',
+  'trigonometric integrals',
+  'trigonometric substitution',
+  'partial fractions',
+  'improper integrals',
+  'arc length',
+  'surface area',
+  'center of mass',
+  'integration',
+  'substitution',
+  'area between',
+  'volume',
+  'work',
+  'average value',
+];
+
+const diffEqTopics = [
+  'separable',
+  'first order linear',
+  'differential equation',
+  'diffeq',
+  "euler's method",
+  'population model',
+  'mixing problem',
+  'newton law',
+  'cooling',
+  'growth',
+  'decay',
+];
+
+function getTopicCategory(topicName: string): 'Integration' | 'DiffEq' | null {
+  const lowerTopic = topicName.toLowerCase();
+
+  // Check Integration topics first
+  if (integrationTopics.some(t => lowerTopic.includes(t))) {
+    return 'Integration';
+  }
+
+  // Check DiffEq topics
+  if (diffEqTopics.some(t => lowerTopic.includes(t))) {
+    return 'DiffEq';
+  }
+
+  return null;
+}
 
 export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -84,7 +132,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
   // Filter and limit cards
   const filteredCards = activeFilter === 'All'
     ? questions.slice(0, 6)
-    : questions.filter(q => q.topic_name?.toLowerCase().includes(activeFilter.toLowerCase())).slice(0, 6);
+    : questions.filter(q => getTopicCategory(q.topic_name) === activeFilter).slice(0, 6);
 
   // Get a featured question for the preview card
   const featuredQuestion = questions[0] || null;
