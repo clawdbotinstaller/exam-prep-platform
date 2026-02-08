@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, BookOpen, Lightbulb, Target, Clock, BarChart3, ChevronRight } from 'lucide-react';
 import { API_URL } from '../../lib/api';
+import LatexRenderer from '../../components/LatexRenderer';
 
 interface SampleQuestion {
   id: string;
@@ -66,21 +67,6 @@ export default function TopicAnalysisDetail() {
     };
     load();
   }, [slug, topicId]);
-
-  const formatMathText = (text: string) => {
-    if (!text) return '';
-    return text
-      .replace(/\\int/g, '∫')
-      .replace(/\\sin/g, 'sin')
-      .replace(/\\cos/g, 'cos')
-      .replace(/\\tan/g, 'tan')
-      .replace(/\\ln/g, 'ln')
-      .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
-      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<sup>$1</sup>&frasl;<sub>$2</sub>')
-      .replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>')
-      .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
-      .replace(/\$([^$]+)\$/g, '$1');
-  };
 
   const getDifficultyColor = (diff: number) => {
     if (diff <= 2) return 'border-green-500 text-green-600';
@@ -272,10 +258,9 @@ export default function TopicAnalysisDetail() {
                   {question.semester} {question.year}
                 </span>
               </div>
-              <p
-                className="font-serif text-ink-black text-sm leading-relaxed line-clamp-2"
-                dangerouslySetInnerHTML={{ __html: formatMathText(question.question_text) }}
-              />
+              <div className="font-serif text-ink-black text-sm leading-relaxed line-clamp-2">
+                <LatexRenderer tex={question.question_text} />
+              </div>
             </div>
           ))}
         </div>

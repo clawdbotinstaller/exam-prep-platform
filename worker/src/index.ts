@@ -633,10 +633,12 @@ app.get('/api/courses', async (c) => {
   return c.json({ courses: courses.results ?? [] });
 });
 
-// Analysis (costs 2 credits)
+// Analysis (costs 2 credits) - Uses real DB-derived data
 app.get('/api/courses/:id/analysis', requireAuth, async (c) => {
   const userId = c.get('userId');
-  const user = await ensureMonthlyCredits(c.env.DB, userId);
+  const courseId = c.req.param('id');
+  const db = c.env.DB;
+  const user = await ensureMonthlyCredits(db, userId);
   if (!user) return c.json({ error: 'Not found' }, 404);
 
   if (!user.has_unlimited && user.credits < 2) {
@@ -644,25 +646,98 @@ app.get('/api/courses/:id/analysis', requireAuth, async (c) => {
   }
 
   if (!user.has_unlimited) {
-    await c.env.DB.prepare('UPDATE users SET credits = credits - 2 WHERE id = ?').bind(userId).run();
-    await c.env.DB.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+    await db.prepare('UPDATE users SET credits = credits - 2 WHERE id = ?').bind(userId).run();
+    await db.prepare('INSERT INTO credit_transactions (id, user_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, -2, 'analysis_view', 'Exam analysis', nowTs())
       .run();
   }
 
-  return c.json({
-    credits_deducted: user.has_unlimited ? 0 : 2,
-    analysis: {
-      topic_distribution: [
-        { topic_id: 'series', name: 'Sequences & Series', count: 5, percentage: 32, avg_points: 15 },
-        { topic_id: 'integration', name: 'Integration Techniques', count: 4, percentage: 28, avg_points: 12 },
-      ],
-      difficulty_distribution: { easy: 30, medium: 45, hard: 25 },
-      high_value_topics: [{ topic_id: 'series', name: 'Series Convergence Tests', avg_points: 15, frequency: 'Often' }],
-      recommended_study_order: ['series', 'integration'],
-      study_strategy: 'Focus on series convergence and integration techniques first.',
-    },
-  });
+  try {
+    // Get topic distribution from actual questions
+    const topicDistributionResult = await db.prepare(`
+      SELECT t.id as topic_id, t.name,
+        COUNT(q.id) as count,
+        AVG(q.points) as avg_points,
+        AVG(q.difficulty) as avg_difficulty
+      FROM topics t
+      LEFT JOIN questions q ON t.id = q.topic_id
+      WHERE t.course_id = ?
+      GROUP BY t.id
+      HAVING COUNT(q.id) > 0
+      ORDER BY COUNT(q.id) DESC
+    `).bind(courseId).all();
+
+    const topicDistribution = (topicDistributionResult.results ?? []) as any[];
+    const totalQuestions = topicDistribution.reduce((sum, t) => sum + t.count, 0);
+
+    // Calculate percentages
+    const topicDistributionWithPct = topicDistribution.map(t => ({
+      topic_id: t.topic_id,
+      name: t.name,
+      count: t.count,
+      percentage: totalQuestions > 0 ? Math.round((t.count / totalQuestions) * 100) : 0,
+      avg_points: Math.round(t.avg_points ?? 10),
+      avg_difficulty: Math.round(t.avg_difficulty ?? 3),
+    }));
+
+    // Get difficulty distribution from actual questions
+    const difficultyResult = await db.prepare(`
+      SELECT
+        SUM(CASE WHEN difficulty <= 2 THEN 1 ELSE 0 END) as easy,
+        SUM(CASE WHEN difficulty = 3 THEN 1 ELSE 0 END) as medium,
+        SUM(CASE WHEN difficulty >= 4 THEN 1 ELSE 0 END) as hard,
+        COUNT(*) as total
+      FROM questions
+      WHERE course_id = ?
+    `).bind(courseId).first<any>();
+
+    const total = difficultyResult?.total || 1;
+    const difficultyDistribution = {
+      easy: Math.round(((difficultyResult?.easy || 0) / total) * 100),
+      medium: Math.round(((difficultyResult?.medium || 0) / total) * 100),
+      hard: Math.round(((difficultyResult?.hard || 0) / total) * 100),
+    };
+
+    // Get high-value topics (high points + high frequency)
+    const highValueTopics = topicDistributionWithPct
+      .filter(t => t.avg_points >= 12 && t.count >= 3)
+      .slice(0, 3)
+      .map(t => ({
+        topic_id: t.topic_id,
+        name: t.name,
+        avg_points: t.avg_points,
+        frequency: t.count >= 5 ? 'Very Often' : t.count >= 3 ? 'Often' : 'Sometimes',
+      }));
+
+    // Calculate recommended study order (challenging topics first)
+    const recommendedStudyOrder = topicDistributionWithPct
+      .sort((a, b) => (b.avg_difficulty * b.count) - (a.avg_difficulty * a.count))
+      .map(t => t.topic_id);
+
+    // Generate study strategy based on actual data
+    const hardestTopic = topicDistributionWithPct.sort((a, b) => b.avg_difficulty - a.avg_difficulty)[0];
+    const mostFrequentTopic = topicDistributionWithPct.sort((a, b) => b.count - a.count)[0];
+    const studyStrategy = `Focus on ${mostFrequentTopic?.name || 'key topics'} (${mostFrequentTopic?.count || 0} questions) and master ${hardestTopic?.name || 'challenging concepts'} (difficulty ${hardestTopic?.avg_difficulty || 3}/5).`;
+
+    return c.json({
+      credits_deducted: user.has_unlimited ? 0 : 2,
+      analysis: {
+        topic_distribution: topicDistributionWithPct.slice(0, 6),
+        difficulty_distribution: difficultyDistribution,
+        high_value_topics: highValueTopics.length > 0 ? highValueTopics : topicDistributionWithPct.slice(0, 2).map(t => ({
+          topic_id: t.topic_id,
+          name: t.name,
+          avg_points: t.avg_points,
+          frequency: 'Often',
+        })),
+        recommended_study_order: recommendedStudyOrder.slice(0, 5),
+        study_strategy: studyStrategy,
+      },
+    });
+  } catch (error) {
+    console.error('Analysis error:', error);
+    return c.json({ error: 'Failed to generate analysis', details: String(error) }, 500);
+  }
 });
 
 // Detailed Analysis (unified topic analysis hub - costs 2 credits)
@@ -703,7 +778,9 @@ app.get('/api/courses/:id/analysis-detailed', requireAuth, async (c) => {
 
     const questions = (questionsResult.results ?? []) as any[];
 
-    // Section to chapter mapping
+    // Section to chapter mapping - MIDTERM TOPICS ONLY (can be expanded later)
+    // Based on OpenStax Calculus Vol 2: Ch 3 (3.1-3.4, 3.7) + Ch 4 (4.1, 4.2, 4.5)
+    // Excludes: 3.5, 3.6, 4.3, 4.4, and all of Ch 5-7
     const sectionToChapter: Record<string, { chapterId: string; chapterNum: string; chapterName: string; sectionName: string }> = {
       '3.1': { chapterId: 'integration', chapterNum: '3', chapterName: 'Integration', sectionName: 'Integration by Parts' },
       '3.2': { chapterId: 'integration', chapterNum: '3', chapterName: 'Integration', sectionName: 'Trigonometric Integrals' },
@@ -1131,9 +1208,22 @@ app.post('/api/midterm/generate', requireAuth, async (c) => {
   }
 
   // Fetch questions with weighted selection
+  // Support section-based filtering if sections array provided in config
+  let query = 'SELECT q.*, t.name as topic_name FROM questions q LEFT JOIN topics t ON q.topic_id = t.id WHERE q.course_id = ? AND q.difficulty >= ? AND q.difficulty <= ?';
+  const queryParams: any[] = [courseId, minDifficulty, maxDifficulty];
+
+  // Add section filtering if specified
+  if (config?.sections && config.sections.length > 0) {
+    const sectionPlaceholders = config.sections.map(() => '?').join(',');
+    query += ` AND q.section IN (${sectionPlaceholders})`;
+    queryParams.push(...config.sections);
+  }
+
+  query += ' ORDER BY RANDOM()';
+
   const allQuestions = await c.env.DB
-    .prepare('SELECT q.*, t.name as topic_name FROM questions q LEFT JOIN topics t ON q.topic_id = t.id WHERE q.course_id = ? AND q.difficulty >= ? AND q.difficulty <= ? ORDER BY RANDOM()')
-    .bind(courseId, minDifficulty, maxDifficulty)
+    .prepare(query)
+    .bind(...queryParams)
     .all();
 
   // Apply weighted scoring if config provided

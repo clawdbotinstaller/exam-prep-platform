@@ -199,7 +199,7 @@ export default function CoursePractice() {
 
       {/* Start Practice Card */}
       {(selectedTopics.length > 0 || selectedTechnique) && (
-        <div className="index-card p-6 sticky bottom-8">
+        <div className="index-card p-6 sticky bottom-8 z-10">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <p className="font-sans text-pencil-gray text-sm mb-1">

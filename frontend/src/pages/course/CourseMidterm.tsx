@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Timer, Lightbulb, EyeOff, CheckCircle } from 'lucide-react';
 import { apiPost } from '../../lib/api';
+import LatexRenderer, { LatexDisplay } from '../../components/LatexRenderer';
 
 interface Question {
   id: string;
@@ -87,21 +88,6 @@ export default function CourseMidterm() {
     setShowSolution(true);
   };
 
-  const formatMathText = (text: string) => {
-    if (!text) return '';
-    return text
-      .replace(/\\int/g, '∫')
-      .replace(/\\sin/g, 'sin')
-      .replace(/\\cos/g, 'cos')
-      .replace(/\\tan/g, 'tan')
-      .replace(/\\ln/g, 'ln')
-      .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
-      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<sup>$1</sup>&frasl;<sub>$2</sub>')
-      .replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>')
-      .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
-      .replace(/\$([^$]+)\$/g, '$1');
-  };
-
   const getDifficultyColor = (diff?: number) => {
     if (!diff) return 'bg-pencil-gray';
     if (diff <= 2) return 'bg-green-500';
@@ -143,13 +129,15 @@ export default function CourseMidterm() {
               setCurrentQuestion(i + 1);
               setShowSolution(false);
             }}
-            className={`flex-1 h-2 rounded-sm transition-all ${
+            className={`flex-1 h-3 min-w-[24px] rounded-sm transition-all focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blueprint-navy ${
               i + 1 === currentQuestion
                 ? 'bg-blueprint-navy'
                 : completed.has(i + 1)
                 ? 'bg-green-400'
                 : 'bg-pencil-gray/20'
             }`}
+            aria-label={`Go to question ${i + 1}`}
+            aria-current={i + 1 === currentQuestion ? 'true' : undefined}
           />
         ))}
       </div>
@@ -182,13 +170,8 @@ export default function CourseMidterm() {
         </div>
 
         {/* Question Text */}
-        <div className="mb-8">
-          <p
-            className="font-serif text-ink-black text-lg leading-relaxed"
-            dangerouslySetInnerHTML={{
-              __html: formatMathText(current?.question_text || 'Question loading...')
-            }}
-          />
+        <div className="mb-8 font-serif text-ink-black text-lg leading-relaxed">
+          <LatexRenderer tex={current?.question_text || 'Question loading...'} />
         </div>
 
         {/* Solution Section */}
@@ -197,21 +180,17 @@ export default function CourseMidterm() {
             <h3 className="font-condensed text-blueprint-navy text-xs uppercase tracking-widest mb-4">
               Solution
             </h3>
-            <div
-              className="font-sans text-ink-black text-sm leading-relaxed whitespace-pre-line"
-              dangerouslySetInnerHTML={{
-                __html: formatMathText(current.solution_steps)
-              }}
-            />
+            <div className="font-sans text-ink-black text-sm leading-relaxed whitespace-pre-line">
+              <LatexDisplay tex={current.solution_steps} />
+            </div>
             {current.answer && (
               <div className="mt-4 pt-4 border-t border-pencil-gray/20">
                 <span className="font-condensed text-[10px] uppercase tracking-widest text-pencil-gray">
                   Answer: {' '}
                 </span>
-                <span
-                  className="font-mono text-ink-black"
-                  dangerouslySetInnerHTML={{ __html: formatMathText(current.answer) }}
-                />
+                <span className="font-mono text-ink-black">
+                  <LatexRenderer tex={current.answer} />
+                </span>
               </div>
             )}
           </div>

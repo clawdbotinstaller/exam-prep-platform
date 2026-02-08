@@ -159,7 +159,7 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
 
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center gap-2 bg-white text-blueprint-navy font-condensed text-xs uppercase tracking-widest px-6 py-3 hover:bg-slate-100 transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-white text-blueprint-navy font-condensed text-xs uppercase tracking-widest px-6 py-3 hover:bg-slate-100 transition-colors min-touch-target"
             >
               <Send className="w-4 h-4" strokeWidth={1.5} />
               Create Free Account
@@ -202,10 +202,11 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                      <label htmlFor="contact-name" className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
                         Name
                       </label>
                       <input
+                        id="contact-name"
                         type="text"
                         name="name"
                         value={formData.name}
@@ -217,10 +218,11 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                       />
                     </div>
                     <div>
-                      <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                      <label htmlFor="contact-email" className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
                         Email
                       </label>
                       <input
+                        id="contact-email"
                         type="email"
                         name="email"
                         value={formData.email}
@@ -234,10 +236,11 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                   </div>
 
                   <div>
-                    <label className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
+                    <label htmlFor="contact-message" className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2 block">
                       Message
                     </label>
                     <textarea
+                      id="contact-message"
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
@@ -258,11 +261,19 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-blueprint-navy text-paper-cream font-condensed text-xs uppercase tracking-widest py-4 flex items-center justify-center gap-2 hover:bg-highlighter-yellow hover:text-blueprint-navy transition-colors disabled:opacity-50"
+                    className="w-full bg-blueprint-navy text-paper-cream font-condensed text-xs uppercase tracking-widest py-4 flex items-center justify-center gap-2 hover:bg-highlighter-yellow hover:text-blueprint-navy transition-colors disabled:opacity-50 min-touch-target"
                   >
                     <Send className="w-4 h-4" strokeWidth={1.5} />
                     {isSubmitting ? 'Sending...' : 'Send Message'}
                   </button>
+
+                  {/* Privacy notice */}
+                  <p className="font-sans text-pencil-gray/60 text-[10px] text-center">
+                    By submitting, you agree to our{' '}
+                    <Link to="/privacy" className="text-blueprint-navy hover:underline">
+                      Privacy Policy
+                    </Link>
+                  </p>
                 </form>
 
                 {/* Library stamp */}
@@ -282,9 +293,14 @@ export default function ContactSection({ className = '' }: ContactSectionProps) 
             </span>
             <span className="px-2 py-0.5 border border-slate-600 text-slate-400 font-mono text-[10px]">v1.0</span>
           </div>
-          <p className="font-condensed text-slate-500 text-[10px] uppercase tracking-widest text-center sm:text-right">
-            Real exam questions from real universities. 2022–2024.
-          </p>
+          <div className="flex items-center gap-6">
+            <Link to="/privacy" className="font-condensed text-slate-400 text-[10px] uppercase tracking-widest hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <p className="font-condensed text-slate-500 text-[10px] uppercase tracking-widest text-center sm:text-right">
+              Real exam questions from real universities. 2022–2024.
+            </p>
+          </div>
         </div>
 
         {/* Technical drawing footer */}

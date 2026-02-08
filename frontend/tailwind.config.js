@@ -13,6 +13,7 @@ module.exports = {
         'blueprint-navy': '#1E3A5F',
         'highlighter-yellow': '#F4D03F',
         'red-pen': '#C0392B',
+        'stamp-red': '#C53030',
         
         /* shadcn compatibility */
         border: "hsl(var(--border))",

@@ -128,8 +128,7 @@ export default function QuestionSpotlight({ className = '' }: QuestionSpotlightP
     <section
       ref={sectionRef}
       id="spotlight"
-      className={`section-pinned flex items-center ${className}`}
-      style={{ backgroundColor: '#F5F1E8' }}
+      className={`section-pinned flex items-center bg-paper-cream ${className}`}
     >
       {/* Graph paper background */}
       <div className="absolute inset-0 graph-paper" />

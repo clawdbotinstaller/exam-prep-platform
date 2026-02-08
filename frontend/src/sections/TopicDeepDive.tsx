@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Loader2, Lightbulb } from 'lucide-react';
 import { API_URL } from '../lib/api';
 import ErrorApology from '../components/ErrorApology';
+import LatexRenderer from '../components/LatexRenderer';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -160,20 +161,6 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
     return 'Hard';
   };
 
-  const formatMathText = (text: string) => {
-    if (!text) return '';
-    return text
-      .replace(/\\int/g, '∫')
-      .replace(/\\sin/g, 'sin')
-      .replace(/\\cos/g, 'cos')
-      .replace(/\\tan/g, 'tan')
-      .replace(/\\ln/g, 'ln')
-      .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
-      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<sup>$1</sup>&frasl;<sub>$2</sub>')
-      .replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>')
-      .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
-      .replace(/\$([^$]+)\$/g, '$1');
-  };
 
   const parseSubparts = (json: string | null) => {
     if (!json) return [];
@@ -188,8 +175,7 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
     <section
       ref={sectionRef}
       id="deep-dive"
-      className={`section-pinned flex items-center ${className}`}
-      style={{ backgroundColor: '#F5F1E8' }}
+      className={`section-pinned flex items-center bg-paper-cream ${className}`}
     >
       {/* Graph paper background */}
       <div className="absolute inset-0 graph-paper" />
@@ -239,12 +225,9 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
                   Evaluate:
                 </p>
 
-                <div
-                  className="font-mono text-xl lg:text-2xl text-ink-black text-center py-4"
-                  dangerouslySetInnerHTML={{
-                    __html: formatMathText(quickQuestion?.question_text || '∫ eˣ cos(x) dx')
-                  }}
-                />
+                <div className="font-mono text-xl lg:text-2xl text-ink-black text-center py-4">
+                  <LatexRenderer tex={quickQuestion?.question_text || '∫ eˣ cos(x) dx'} />
+                </div>
 
                 {showQuickSolution && quickQuestion?.solution_steps && (
                   <div className="mt-4 p-3 bg-paper-aged/50 rounded border-l-2 border-blueprint-navy">
@@ -282,19 +265,16 @@ export default function TopicDeepDive({ className = '' }: TopicDeepDiveProps) {
                   </div>
                 </div>
 
-                <p
-                  className="font-sans text-pencil-gray text-sm mb-4"
-                  dangerouslySetInnerHTML={{
-                    __html: formatMathText(examQuestion?.question_text || 'Consider the region bounded by y = √x, y = 0, and x = 4.')
-                  }}
-                />
+                <p className="font-sans text-pencil-gray text-sm mb-4">
+                  <LatexRenderer tex={examQuestion?.question_text || 'Consider the region bounded by y = √x, y = 0, and x = 4.'} />
+                </p>
 
                 {examQuestion?.has_subparts && examQuestion?.subparts_json ? (
                   <div className="space-y-4 font-sans text-ink-black text-sm">
                     {parseSubparts(examQuestion.subparts_json).map((sub: any, idx: number) => (
                       <p key={idx}>
                         ({sub.number.replace(/\D/g, '')}) {' '}
-                        <span dangerouslySetInnerHTML={{ __html: formatMathText(sub.text) }} />
+                        <LatexRenderer tex={sub.text} />
                         {' '}
                         <span className="font-mono text-pencil-gray text-xs">({sub.points} pts)</span>
                       </p>

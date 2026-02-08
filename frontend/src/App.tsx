@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import CourseLayout from './layouts/CourseLayout';
 import CourseHome from './pages/course/CourseHome';
 import CourseAnalysis from './pages/course/CourseAnalysis';
+import CourseAnalysisChapter from './pages/course/CourseAnalysisChapter';
 import TopicAnalysisDetail from './pages/course/TopicAnalysisDetail';
 import CoursePractice from './pages/course/CoursePractice';
 import CourseArchive from './pages/course/CourseArchive';
@@ -108,6 +109,7 @@ function App() {
         >
           <Route index element={<CourseHome />} />
           <Route path="analysis" element={<CourseAnalysis />} />
+          <Route path="analysis/chapter/:chapterId" element={<CourseAnalysisChapter />} />
           <Route path="analysis/:topicId" element={<TopicAnalysisDetail />} />
           <Route path="practice" element={<CoursePractice />} />
           <Route path="archive" element={<CourseArchive />} />

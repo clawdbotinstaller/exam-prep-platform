@@ -1,11 +1,12 @@
--- Complete MTH240 Question Import (33 questions, 5 exams)
+-- Complete MTH240 Question Import (28 questions, 5 exams)
 -- Adapts data from data questions.md to worker schema
+-- CLEANED VERSION: Removed series questions not in approved sections
 
 -- First ensure all exams exist
 INSERT OR IGNORE INTO exams (id, course_id, course_code, year, semester, exam_type, total_points, exam_date, difficulty_label) VALUES
 ('2015_winter_midterm1', 'calc2', 'MTH240', 2015, 'Winter', 'Midterm 1', 50, 1422576000, 'medium'),
-('2019_winter_midterm2', 'calc2', 'MTH240', 2019, 'Winter', 'Midterm 2', 50, 1553817600, 'hard'),
-('2024_spring_midterm', 'calc2', 'MTH240', 2024, 'Spring', 'Midterm', 40, 1716768000, 'medium'),
+('2019_winter_midterm2', 'calc2', 'MTH240', 2019, 'Winter', 'Midterm 2', 26, 1553817600, 'hard'),
+('2024_spring_midterm', 'calc2', 'MTH240', 2024, 'Spring', 'Midterm', 34, 1716768000, 'medium'),
 ('2025_winter_midterm', 'calc2', 'MTH240', 2025, 'Winter', 'Midterm', 60, 1739491200, 'medium'),
 ('2025_summer_midterm', 'calc2', 'MTH240', 2025, 'Summer', 'Midterm', 40, 1751088000, 'medium');
 
@@ -65,47 +66,11 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
  10, 4, 1, 10, '\\int_{c1}^{c2} v1^{c3} \\ln(v1) dv1', '["2025_winter_midterm"]', 'exam_archive', 2015, 'Midterm', 10);
 
 -- ==========================================
--- EXAM 2: 2019 WINTER MIDTERM 2 (6 Questions)
+-- EXAM 2: 2019 WINTER MIDTERM 2 (2 Questions - Removed series questions)
 -- ==========================================
 
-INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, has_subparts, subparts_json, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2019w_1', '2019_winter_midterm2', 'calc2', '1',
- 'Determine whether series convergent or divergent',
- 'Parent with subparts (a) and (b).',
- 'See subparts',
- 'series_convergence', '4.5', '["divergence_test","geometric_series_formula","algebraic_manipulation"]',
- 8, 3, 0, 10, 1,
- '[{"number": "1a", "points": 4, "text": "$\\sum_{n=1}^{\\infty} \\ln(\\frac{n^{2}+1}{5n^{2}+3})$", "solution": "Divergence Test: limit = ln(1/5) ≠ 0, diverges."}, {"number": "1b", "points": 4, "text": "$\\sum_{n=1}^{\\infty} \\frac{6 \\cdot 2^{2n-1}}{5^{n+1}}$", "solution": "Simplify to geometric with a=12/25, r=4/5. Converges to 12/5."}]',
- '\\sum \\ln(\\frac{v1^{c1}+c2}{c3 v1^{c1}+c4})', '[]', 'exam_archive', 2019, 'Midterm', 8);
-
-INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, has_subparts, subparts_json, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2019w_2', '2019_winter_midterm2', 'calc2', '2',
- 'Integral Test application',
- 'Parent with subparts (a) and (b).',
- 'See subparts',
- 'integral_test', '3.7', '["integral_test_conditions","trig_substitution","improper_integral_evaluation"]',
- 8, 4, 0, 11, 1,
- '[{"number": "2a", "points": 2, "text": "Explain why Integral Test applies to $\\sum \\frac{1}{(1+4n^{2})^{3/2}}$", "solution": "Check: positive, continuous, decreasing on [1,∞). All satisfied."}, {"number": "2b", "points": 6, "text": "Use Integral Test to determine convergence", "solution": "Substitute x=(1/2)tan(θ). Evaluates to finite value 1/2[1-2/√5]. Converges."}]',
- '\\sum \\frac{1}{(c1 + c2 v1^{c3})^{c4}}', '[]', 'exam_archive', 2019, 'Midterm', 8);
-
 INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2019w_3', '2019_winter_midterm2', 'calc2', '3',
- 'Determine absolute, conditional convergence, or divergence: $\sum_{n=1}^{\infty} \frac{(-1)^{n-1}\sqrt{2n^{2}-1}}{5n^{2}-3n+1}$',
- 'Step 1: Absolute convergence: Limit Comparison with 1/n diverges.\nStep 2: Alternating Series Test: limit = 0, decreasing.\nStep 3: Conditionally convergent.',
- 'Conditionally convergent',
- 'series_convergence', '4.5', '["alternating_series_test","limit_comparison_test","absolute_vs_conditional"]',
- 8, 4, 1, 9, '\\sum \\frac{(-1)^{v1-c1}\\sqrt{c2 v1^{c3}-c4}}{c5 v1^{c3}-c6 v1+c7}', '[]', 'exam_archive', 2019, 'Midterm', 8);
-
-INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2019w_4', '2019_winter_midterm2', 'calc2', '4',
- 'Determine convergence: $\sum_{n=1}^{\infty} \frac{(2n)!}{n^{n-1}(n+1)^{n+1}}$',
- 'Step 1: Ratio Test. Compute a_{n+1}/a_n.\nStep 2: Simplify factorials. Numerator ~ 4n^3, Denominator ~ n^{n+2}.\nStep 3: Limit = 0 < 1. Converges.',
- 'Converges (Ratio Test)',
- 'series_convergence', '4.5', '["ratio_test","factorial_simplification","growth_comparison"]',
- 8, 5, 0, 10, '\\sum \\frac{(c1 v1)!}{v1^{v1-c2}(v1+c3)^{v1+c4}}', '[]', 'exam_archive', 2019, 'Midterm', 8);
-
-INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2019w_5', '2019_winter_midterm2', 'calc2', '5',
+('q_2019w_5', '2019_winter_midterm2', 'calc2', '1',
  'Solve implicitly: $4y\frac{dy}{dx} = (y^{4}-1)\tan^{-1}(x)$',
  'Step 1: Separate: $\frac{4y}{y^{4}-1} dy = \tan^{-1}(x) dx$.\nStep 2: Partial fractions LHS, IBP RHS.\nStep 3: $\ln|\frac{y-1}{y+1}| - 2\tan^{-1}(y) = x\tan^{-1}(x) - \frac{1}{2}\ln(1+x^{2}) + C$.',
  '$\ln|\frac{y-1}{y+1}| - 2\tan^{-1}(y) = x\tan^{-1}(x) - \frac{1}{2}\ln(1+x^{2}) + C$',
@@ -113,7 +78,7 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
  8, 4, 1, 10, 'c1 v2 \\frac{dv2}{dv1} = (v2^{c2}-c3)\\tan^{-1}(v1)', '["2025_winter_midterm"]', 'exam_archive', 2019, 'Midterm', 8);
 
 INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2019w_6', '2019_winter_midterm2', 'calc2', '6',
+('q_2019w_6', '2019_winter_midterm2', 'calc2', '2',
  'Solve IVP: $\frac{1}{\sqrt{x}}\frac{dy}{dx} = \frac{x^{3/2}(1-12y)}{x^{3}+2}$, $y(1)=1$',
  'Step 1: Separate: $\frac{dy}{1-12y} = \frac{x^{2}}{x^{3}+2} dx$.\nStep 2: Integrate: $-\frac{1}{12}\ln|1-12y| = \frac{1}{3}\ln|x^{3}+2| + C$.\nStep 3: Apply IC: $y = \frac{1}{12}(1 + \frac{891}{(x^{3}+2)^{4}})$.',
  '$y = \\frac{1}{12}(1 + \\frac{891}{(x^{3}+2)^{4}})$',
@@ -121,7 +86,7 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
  10, 4, 0, 12, '\\frac{1}{v1^{c1}}\\frac{dv2}{dv1} = \\frac{v1^{c2}(c3-c4 v2)}{v1^{c5}+c6}', '["2024_spring_midterm","2025_summer_midterm"]', 'exam_archive', 2019, 'Midterm', 10);
 
 -- ==========================================
--- EXAM 3: 2024 SPRING MIDTERM (7 Questions)
+-- EXAM 3: 2024 SPRING MIDTERM (6 Questions - Removed q_2024s_3 which was second-order DE)
 -- ==========================================
 
 INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
@@ -141,15 +106,7 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
  8, 4, 0, 10, '\\int \\frac{dv1}{v1^{c1}\\sqrt{v1^{c1}-c2}}', '["2025_summer_midterm"]', 'exam_archive', 2024, 'Midterm', 8);
 
 INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2024s_3', '2024_spring_midterm', 'calc2', '3',
- 'Solve IVP: $y'' + y = \cos(e^{x})$, $y(\ln(\pi)) = 2$',
- 'Step 1: IF = $e^{x}$.\nStep 2: $\frac{d}{dx}[e^{x}y] = e^{x}\cos(e^{x})$.\nStep 3: $y = e^{-x}\sin(e^{x}) + Ce^{-x}$.\nStep 4: IC gives $C = 2\pi$.\nStep 5: $y = e^{-x}\sin(e^{x}) + 2\pi e^{-x}$.',
- '$y = e^{-x}\sin(e^{x}) + 2\\pi e^{-x}$',
- 'first_order_linear_de', '4.5', '["integrating_factor","u_substitution","initial_value_problem"]',
- 6, 4, 0, 8, 'v2'' + v2 = \\cos(e^{v1})', '["2025_summer_midterm"]', 'exam_archive', 2024, 'Midterm', 6);
-
-INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2024s_4', '2024_spring_midterm', 'calc2', '4',
+('q_2024s_4', '2024_spring_midterm', 'calc2', '3',
  'Write partial fraction form: $\frac{4x^{5}-2x^{2}+x}{(x+1)(x^{2}-1)^{2}(x^{2}+x+1)^{2}}$',
  'Step 1: Factor: $(x+1)^{3}(x-1)^{2}(x^{2}+x+1)^{2}$.\nStep 2: Form with 7 terms for repeated/irreducible factors.',
  'Form: $\frac{A}{x+1} + \frac{B}{(x+1)^2} + \frac{C}{(x+1)^3} + \frac{D}{x-1} + \frac{E}{(x-1)^2} + \frac{Fx+G}{x^2+x+1} + \frac{Hx+I}{(x^2+x+1)^2}$',
@@ -157,7 +114,7 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
  5, 3, 0, 6, '\\frac{c1 v1^{c2}+c3}{(v1+c4)(v1^{c5}-c6)^{c7}(v1^{c5}+v1+c8)^{c9}}', '["2025_summer_midterm"]', 'exam_archive', 2024, 'Midterm', 5);
 
 INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2024s_5', '2024_spring_midterm', 'calc2', '5',
+('q_2024s_5', '2024_spring_midterm', 'calc2', '4',
  'Determine convergence using Comparison: $\int_{1}^{\infty} \frac{x^{2}+\sin^{2}(x)}{x^{5}} dx$',
  'Step 1: Bound: $\leq \frac{2}{x^{3}}$.\nStep 2: $\int \frac{2}{x^{3}}$ converges (p=3>1).\nStep 3: Original converges.',
  'Converges (Comparison Test)',
@@ -165,7 +122,7 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
  6, 3, 0, 6, '\\int_{c1}^{\\infty} \\frac{v1^{c2}+\\sin^{c3}(v1)}{v1^{c4}} dv1', '["2025_summer_midterm"]', 'exam_archive', 2024, 'Midterm', 6);
 
 INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2024s_6', '2024_spring_midterm', 'calc2', '6',
+('q_2024s_6', '2024_spring_midterm', 'calc2', '5',
  'Determine convergence: $\int_{0}^{2} \frac{1}{(x-1)^{2/3}} dx$. Evaluate if convergent.',
  'Step 1: Discontinuity at $x=1$. Split.\nStep 2: Antiderivative: $3(x-1)^{1/3}$.\nStep 3: Both sides converge to 3. Total = 6.',
  'Converges to 6',
@@ -173,7 +130,7 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
  6, 4, 0, 7, '\\int_{c1}^{c2} \\frac{1}{(v1-c3)^{c4}} dv1', '[]', 'exam_archive', 2024, 'Midterm', 6);
 
 INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
-('q_2024s_7', '2024_spring_midterm', 'calc2', '7',
+('q_2024s_7', '2024_spring_midterm', 'calc2', '6',
  'Solve explicitly: $(x^{2}+3x+2)y'' = y$',
  'Step 1: Factor: $(x+1)(x+2)y'' = y$.\nStep 2: Separate: $\frac{dy}{y} = (\frac{1}{x+1} - \frac{1}{x+2})dx$.\nStep 3: $y = A \cdot \frac{x+1}{x+2}$.',
  '$y = A \\cdot \\frac{x+1}{x+2}$',
@@ -256,9 +213,9 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
 
 INSERT INTO questions (id, exam_id, course_id, question_number, question_text, solution_steps, answer, topic_id, section, techniques, points, difficulty, is_tricky, estimated_time, canonical_form, similar_to_exams, source_type, source_exam_year, source_exam_type, source_points) VALUES
 ('q_2025s_1', '2025_summer_midterm', 'calc2', '1',
- 'Determine convergent: $\int_{1}^{\infty} \frac{\ln(x)}{x^{3}} dx$. Evaluate.',
- 'Step 1: Type I improper.\nStep 2: Integration by parts.\nStep 3: Converges to 1/4.',
- 'Converges to $\\frac{1}{4}$',
+ 'Determine convergent: $\int_{2}^{\infty} \frac{\ln(x)}{x^{3}} dx$. Evaluate.',
+ 'Step 1: Type I improper. Set up limit from 2 to t as t→∞.\nStep 2: Integration by parts: u=ln(x), dv=dx/x³, so du=dx/x, v=-1/(2x²).\nStep 3: Result: [-(1+2ln2)/8] + 1/4 = (1-2ln2)/8.',
+ 'Converges to $\\frac{1-2\\ln 2}{8}$',
  'improper_integrals', '3.7', '["improper_integral_limit","integration_by_parts","limit_at_infinity"]',
  6, 4, 0, 8, '\\int_{c1}^{\\infty} \\frac{\\ln(v1)}{v1^{c2}} dv1', '["2024_spring_midterm"]', 'exam_archive', 2025, 'Midterm', 6);
 
@@ -316,3 +273,4 @@ INSERT INTO questions (id, exam_id, course_id, question_number, question_text, s
 
 SELECT 'Questions imported' as status, COUNT(*) as count FROM questions WHERE exam_id LIKE '%_midterm%';
 SELECT exam_id, COUNT(*) as question_count FROM questions GROUP BY exam_id;
+SELECT section, COUNT(*) as count, GROUP_CONCAT(DISTINCT topic_id) as topics FROM questions GROUP BY section ORDER BY section;

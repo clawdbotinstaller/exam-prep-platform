@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Filter, BookOpen, FileText, GraduationCap } from 'lucide-react';
 import { apiGet, apiPost } from '../../lib/api';
+import LatexRenderer from '../../components/LatexRenderer';
 import { MidtermSelector } from '../../components/MidtermSelector';
 import { MidtermCustomizer } from '../../components/MidtermCustomizer';
 import type { PresetConfig, MidtermWeightingConfig, SavedMidtermConfig } from '../../types/midterm';
@@ -252,7 +253,9 @@ export default function CourseArchive() {
                       {question.difficulty}
                     </span>
                   </div>
-                  <p className="font-serif text-ink-black mb-2">{question.text}</p>
+                  <div className="font-serif text-ink-black mb-2">
+                    <LatexRenderer tex={question.text} />
+                  </div>
                   <p className="font-sans text-pencil-gray/60 text-xs">
                     {question.source} {question.year}
                   </p>

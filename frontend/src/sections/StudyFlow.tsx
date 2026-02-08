@@ -117,8 +117,7 @@ export default function StudyFlow({ className = '' }: StudyFlowProps) {
     <section
       ref={sectionRef}
       id="about"
-      className={`py-20 lg:py-28 ${className}`}
-      style={{ backgroundColor: '#F5F1E8' }}
+      className={`py-20 lg:py-28 bg-paper-cream ${className}`}
     >
       {/* Graph paper background */}
       <div className="absolute inset-0 graph-paper" />
@@ -139,16 +138,13 @@ export default function StudyFlow({ className = '' }: StudyFlowProps) {
         <div className="ruler-divider mb-12 max-w-md" />
 
         {/* Bento grid steps */}
-        <div ref={cardsRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          {steps.map((step, index) => {
+        <div ref={cardsRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 items-stretch">
+          {steps.map((step) => {
             const Icon = step.icon;
-            const isLarge = index === 0;
             return (
               <div
                 key={step.number}
-                className={`step-card index-card p-6 lg:p-8 flex flex-col justify-between group hover:shadow-lg transition-all duration-300 ${
-                  isLarge ? 'lg:col-span-2 lg:row-span-1' : ''
-                }`}
+                className="step-card index-card p-6 lg:p-8 flex flex-col justify-between group hover:shadow-lg transition-all duration-300 h-full"
               >
                 {/* Top row: Number and Icon */}
                 <div className="flex items-start justify-between mb-6">

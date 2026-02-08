@@ -41,39 +41,39 @@ export default function Navigation() {
         </div>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-2">
           <button
             onClick={() => scrollTo('archive')}
-            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors"
+            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors px-3 py-2 min-touch-target"
           >
             Browse
           </button>
           <button
             onClick={() => scrollTo('topics')}
-            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors"
+            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors px-3 py-2 min-touch-target"
           >
             Topics
           </button>
           <button
             onClick={() => scrollTo('about')}
-            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors"
+            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors px-3 py-2 min-touch-target"
           >
             About
           </button>
           <button
             onClick={() => scrollTo('contact')}
-            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors"
+            className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors px-3 py-2 min-touch-target"
           >
             Contact
           </button>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 ml-4">
             <Link
               to="/login"
-              className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors"
+              className="font-condensed text-xs uppercase tracking-widest text-pencil-gray hover:text-blueprint-navy transition-colors px-3 py-2 min-touch-target"
             >
               Sign In
             </Link>
-            <Link to="/signup" className="btn-blueprint">
+            <Link to="/signup" className="btn-blueprint min-touch-target">
               Sign Up
             </Link>
           </div>
@@ -81,20 +81,23 @@ export default function Navigation() {
 
         {/* Mobile menu button */}
         <button
-          className="md:hidden p-2"
+          className="md:hidden p-2 min-touch-target flex items-center justify-center"
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-menu"
         >
           {mobileOpen ? (
-            <X className="w-5 h-5 text-ink-black" strokeWidth={1.5} />
+            <X className="w-5 h-5 text-ink-black" strokeWidth={1.5} aria-hidden="true" />
           ) : (
-            <Menu className="w-5 h-5 text-ink-black" strokeWidth={1.5} />
+            <Menu className="w-5 h-5 text-ink-black" strokeWidth={1.5} aria-hidden="true" />
           )}
         </button>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-paper-cream border-t border-pencil-gray/20 px-6 py-4">
+        <div id="mobile-menu" className="md:hidden bg-paper-cream border-t border-pencil-gray/20 px-6 py-4">
           <div className="flex flex-col gap-4">
             <button
               onClick={() => scrollTo('archive')}

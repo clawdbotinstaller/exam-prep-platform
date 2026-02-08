@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { apiGet } from '../../lib/api';
+import LatexRenderer, { LatexDisplay } from '../../components/LatexRenderer';
 
 export default function QuestionPage() {
   const { id, slug } = useParams<{ id: string; slug: string }>();
@@ -55,13 +56,17 @@ export default function QuestionPage() {
             <span className="topic-tag text-[8px]">Pattern #{question.pattern_id.slice(-4)}</span>
           )}
         </div>
-        <p className="font-serif text-ink-black text-lg mb-6">{question.question_text ?? question.text}</p>
+        <div className="font-serif text-ink-black text-lg mb-6">
+          <LatexRenderer tex={question.question_text ?? question.text} />
+        </div>
         <button className="btn-blueprint" onClick={() => setShowSolution(!showSolution)}>
           {showSolution ? 'Hide Solution' : 'Show Step-by-Step Solution'}
         </button>
         {showSolution && (
           <div className="mt-6 p-4 bg-paper-aged border-l-2 border-blueprint-navy">
-            <p className="font-sans text-ink-black leading-relaxed whitespace-pre-line">{question.solution_steps ?? question.solution ?? 'Solution not available.'}</p>
+            <div className="font-sans text-ink-black leading-relaxed whitespace-pre-line">
+              <LatexDisplay tex={question.solution_steps ?? question.solution ?? 'Solution not available.'} />
+            </div>
           </div>
         )}
       </div>

@@ -1,342 +1,33 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import {
-  Lock,
-  ChevronDown,
-  ChevronRight,
-  BarChart3,
-  Clock,
-  Target,
-  BookOpen,
-  AlertTriangle,
-  Lightbulb,
-  ArrowRight,
-  Brain
-} from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Lock, ArrowRight, BookOpen, Compass, Grid3X3, AlertCircle } from 'lucide-react';
 import { API_URL } from '../../lib/api';
-import type { Chapter, Section, TechniqueStats, DetailedAnalysisResponse } from '../../types/analysis';
-import { getTechniqueMetadata } from '../../data/techniqueMetadata';
-import { getFrequencyLabel, getDifficultyColor, getDifficultyLabel } from '../../types/analysis';
+import type { Chapter, DetailedAnalysisResponse } from '../../types/analysis';
 
-// =============================================================================
-// COMPONENT: TechniqueCard
-// =============================================================================
+// Helper to determine stamp based on chapter frequency
+const getChapterStamp = (frequency: number): 'CRITICAL' | 'CORE' | 'SUPPLEMENTAL' | undefined => {
+  if (frequency >= 0.8) return 'CRITICAL';
+  if (frequency >= 0.5) return 'CORE';
+  return 'SUPPLEMENTAL';
+};
 
-interface TechniqueCardProps {
-  technique: TechniqueStats;
-  courseSlug: string;
-}
+// Get rotation for scattered effect
+const getRotation = (index: number): string => {
+  const rotations = ['-1deg', '0.5deg', '-0.5deg', '1deg', '0deg', '1.5deg'];
+  return rotations[index % rotations.length];
+};
 
-function TechniqueCard({ technique, courseSlug }: TechniqueCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const metadata = getTechniqueMetadata(technique.id);
+// Get vertical offset for organic stacking
+const getOffset = (index: number): number => {
+  const offsets = [0, 8, -4, 12, -8, 4];
+  return offsets[index % offsets.length];
+};
 
-  return (
-    <div className="index-card p-4 hover:shadow-md transition-all">
-      {/* Header Row */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-serif font-medium text-ink-black">
-              {metadata.displayName}
-            </h4>
-            <span className="date-stamp text-[9px]">{technique.count} questions</span>
-          </div>
-          <p className="font-sans text-pencil-gray text-xs leading-relaxed">
-            {metadata.description}
-          </p>
-        </div>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-1 text-blueprint-navy hover:text-ink-black transition-colors"
-        >
-          <span className="font-condensed text-[10px] uppercase tracking-widest">
-            {isExpanded ? 'Less' : 'Details'}
-          </span>
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
-      </div>
-
-      {/* Stats Row */}
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-pencil-gray/10">
-        <div className="flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-pencil-gray" />
-          <span className="font-mono text-xs text-pencil-gray">{metadata.timeEstimate}</span>
-        </div>
-        <Link
-          to={`/course/${courseSlug}/practice?technique=${technique.id}`}
-          className="flex items-center gap-1 text-blueprint-navy hover:text-ink-black transition-colors ml-auto"
-        >
-          <Brain className="w-3.5 h-3.5" />
-          <span className="font-condensed text-[10px] uppercase tracking-widest">Practice</span>
-        </Link>
-      </div>
-
-      {/* Expanded Content */}
-      {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-pencil-gray/10 space-y-4 animate-in fade-in duration-200">
-          {/* Common Traps */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-3.5 h-3.5 text-stamp-red" />
-              <h5 className="font-condensed text-stamp-red text-[10px] uppercase tracking-widest">
-                Common Traps
-              </h5>
-            </div>
-            <ul className="space-y-1.5">
-              {metadata.commonTraps.slice(0, 4).map((trap, idx) => (
-                <li key={idx} className="flex items-start gap-2">
-                  <span className="font-mono text-stamp-red/60 text-[10px] mt-0.5">{String(idx + 1).padStart(2, '0')}</span>
-                  <span className="font-sans text-ink-black text-xs">{trap}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Study Strategies */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Lightbulb className="w-3.5 h-3.5 text-blueprint-navy" />
-              <h5 className="font-condensed text-blueprint-navy text-[10px] uppercase tracking-widest">
-                Study Strategies
-              </h5>
-            </div>
-            <ul className="space-y-1.5">
-              {metadata.studyStrategies.slice(0, 4).map((strategy, idx) => (
-                <li key={idx} className="flex items-start gap-2">
-                  <span className="font-mono text-blueprint-navy/60 text-[10px] mt-0.5">{String(idx + 1).padStart(2, '0')}</span>
-                  <span className="font-sans text-ink-black text-xs">{strategy}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Sample Questions */}
-          {technique.sampleQuestions.length > 0 && (
-            <div>
-              <h5 className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest mb-2">
-                Sample Questions
-              </h5>
-              <div className="space-y-2">
-                {technique.sampleQuestions.slice(0, 2).map((q, idx) => (
-                  <div key={q.id} className="bg-paper-aged/50 p-2.5 rounded-sm">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-pencil-gray text-[10px]">Q{idx + 1}</span>
-                      <span className={`date-stamp text-[8px] ${getDifficultyColor(q.difficulty || 3)}`}>
-                        {getDifficultyLabel(q.difficulty || 3)}
-                      </span>
-                      {q.points && (
-                        <span className="font-mono text-pencil-gray/60 text-[10px]">{q.points} pts</span>
-                      )}
-                    </div>
-                    <p className="font-serif text-ink-black text-xs line-clamp-2">
-                      {q.question_text?.replace(/\\\w+/g, '').substring(0, 120)}...
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="font-sans text-pencil-gray/50 text-[10px]">
-                        {q.semester} {q.year}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// =============================================================================
-// COMPONENT: SectionAccordion
-// =============================================================================
-
-interface SectionAccordionProps {
-  section: Section;
-  courseSlug: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-}
-
-function SectionAccordion({ section, courseSlug, isExpanded, onToggle }: SectionAccordionProps) {
-  const frequencyLabel = getFrequencyLabel(section.frequency);
-
-  return (
-    <div className="border-l-2 border-pencil-gray/20 ml-3 pl-4">
-      {/* Section Header */}
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between py-3 group"
-      >
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-blueprint-navy text-sm">{section.sectionNum}</span>
-          <div className="text-left">
-            <h3 className="font-serif font-medium text-ink-black group-hover:text-blueprint-navy transition-colors">
-              {section.name}
-            </h3>
-            <div className="flex items-center gap-3 mt-0.5">
-              <span className="font-sans text-pencil-gray text-xs">
-                {section.totalQuestions} questions
-              </span>
-              <span className="font-sans text-pencil-gray/60 text-xs">
-                Avg difficulty: {section.avgDifficulty.toFixed(1)}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className={`font-condensed text-[10px] uppercase tracking-wider ${
-            section.frequency >= 0.6 ? 'text-blueprint-navy' : 'text-pencil-gray'
-          }`}>
-            {frequencyLabel}
-          </span>
-          {isExpanded ? (
-            <ChevronDown className="w-5 h-5 text-pencil-gray" />
-          ) : (
-            <ChevronRight className="w-5 h-5 text-pencil-gray" />
-          )}
-        </div>
-      </button>
-
-      {/* Section Content */}
-      {isExpanded && (
-        <div className="pb-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Section Stats */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="bg-paper-aged/50 p-3 rounded-sm">
-              <div className="flex items-center gap-1.5 mb-1">
-                <BookOpen className="w-3 h-3 text-pencil-gray" />
-                <span className="font-condensed text-pencil-gray text-[9px] uppercase">Questions</span>
-              </div>
-              <p className="font-mono text-lg text-ink-black">{section.totalQuestions}</p>
-            </div>
-            <div className="bg-paper-aged/50 p-3 rounded-sm">
-              <div className="flex items-center gap-1.5 mb-1">
-                <Target className="w-3 h-3 text-pencil-gray" />
-                <span className="font-condensed text-pencil-gray text-[9px] uppercase">Avg Time</span>
-              </div>
-              <p className="font-mono text-lg text-ink-black">{section.avgTime}m</p>
-            </div>
-            <div className="bg-paper-aged/50 p-3 rounded-sm">
-              <div className="flex items-center gap-1.5 mb-1">
-                <BarChart3 className="w-3 h-3 text-pencil-gray" />
-                <span className="font-condensed text-pencil-gray text-[9px] uppercase">Frequency</span>
-              </div>
-              <p className="font-mono text-lg text-ink-black">{Math.round(section.frequency * 100)}%</p>
-            </div>
-          </div>
-
-          {/* Technique Cards */}
-          <div className="space-y-3">
-            {section.techniques.map((technique) => (
-              <TechniqueCard
-                key={technique.id}
-                technique={technique}
-                courseSlug={courseSlug}
-              />
-            ))}
-          </div>
-
-          {section.techniques.length === 0 && (
-            <div className="text-center py-6 bg-paper-aged/30 rounded-sm">
-              <p className="font-sans text-pencil-gray text-sm">
-                No technique data available for this section yet.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// =============================================================================
-// COMPONENT: ChapterAccordion
-// =============================================================================
-
-interface ChapterAccordionProps {
-  chapter: Chapter;
-  courseSlug: string;
-  expandedSection: string | null;
-  onSectionToggle: (sectionId: string) => void;
-}
-
-function ChapterAccordion({ chapter, courseSlug, expandedSection, onSectionToggle }: ChapterAccordionProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const frequencyLabel = getFrequencyLabel(chapter.frequencyScore);
-
-  return (
-    <div className="index-card overflow-hidden">
-      {/* Chapter Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-6 flex items-center justify-between hover:bg-paper-aged/30 transition-colors"
-      >
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-blueprint-navy flex items-center justify-center">
-            <span className="font-mono text-paper-cream text-lg font-bold">{chapter.chapterNum}</span>
-          </div>
-          <div className="text-left">
-            <h2 className="font-serif font-semibold text-ink-black text-xl">
-              {chapter.name}
-            </h2>
-            <div className="flex items-center gap-4 mt-1">
-              <span className="font-sans text-pencil-gray text-sm">
-                {chapter.totalQuestions} questions
-              </span>
-              <span className="font-sans text-pencil-gray/60 text-sm">
-                {chapter.sections.length} sections
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <span className={`font-condensed text-xs uppercase tracking-wider block ${
-              chapter.frequencyScore >= 0.6 ? 'text-blueprint-navy' : 'text-pencil-gray'
-            }`}>
-              {frequencyLabel} Frequency
-            </span>
-            <span className="font-mono text-pencil-gray/60 text-xs">
-              {Math.round(chapter.frequencyScore * 100)}% of exams
-            </span>
-          </div>
-          {isExpanded ? (
-            <ChevronDown className="w-6 h-6 text-pencil-gray" />
-          ) : (
-            <ChevronRight className="w-6 h-6 text-pencil-gray" />
-          )}
-        </div>
-      </button>
-
-      {/* Chapter Content */}
-      {isExpanded && (
-        <div className="px-6 pb-6 border-t border-pencil-gray/10 animate-in fade-in duration-200">
-          <div className="pt-4 space-y-2">
-            {chapter.sections.map((section) => (
-              <SectionAccordion
-                key={section.id}
-                section={section}
-                courseSlug={courseSlug}
-                isExpanded={expandedSection === section.id}
-                onToggle={() => onSectionToggle(section.id)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// =============================================================================
-// MAIN COMPONENT: CourseAnalysis
-// =============================================================================
+// Check if user prefers reduced motion
+const prefersReducedMotion = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
 
 export default function CourseAnalysis() {
   const { slug } = useParams<{ slug: string }>();
@@ -344,7 +35,14 @@ export default function CourseAnalysis() {
   const [hasAccess, setHasAccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [hoveredChapter, setHoveredChapter] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setReducedMotion(prefersReducedMotion());
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -361,6 +59,7 @@ export default function CourseAnalysis() {
 
         if (!response.ok) {
           console.error('Failed to load analysis:', response.status);
+          setError('Failed to load analysis data. Please try again.');
           setIsLoading(false);
           return;
         }
@@ -371,23 +70,78 @@ export default function CourseAnalysis() {
         setIsLoading(false);
       } catch (err) {
         console.error('Analysis load error:', err);
+        setError('An unexpected error occurred. Please try again later.');
         setIsLoading(false);
       }
     };
     load();
   }, [slug]);
 
-  const handleSectionToggle = (sectionId: string) => {
-    setExpandedSection(expandedSection === sectionId ? null : sectionId);
+  const handleChapterClick = (chapterId: string) => {
+    navigate(`/course/${slug}/analysis/chapter/${chapterId}`);
   };
 
   if (isLoading) {
     return (
-      <div className="p-8 lg:p-12 max-w-6xl mx-auto">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-pencil-gray/20 w-1/3"></div>
-          <div className="h-32 bg-pencil-gray/20"></div>
-          <div className="h-32 bg-pencil-gray/20"></div>
+      <div className="min-h-screen bg-paper-cream relative overflow-hidden">
+        {/* Graph paper background */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{
+          backgroundImage: `
+            linear-gradient(var(--ink-black) 1px, transparent 1px),
+            linear-gradient(90deg, var(--ink-black) 1px, transparent 1px)
+          `,
+          backgroundSize: '24px 24px'
+        }} />
+
+        <div className="relative z-10 p-8 lg:p-16 max-w-7xl mx-auto">
+          {/* Skeleton header */}
+          <div className="mb-16">
+            <div className="h-4 w-32 bg-ink-black/10 mb-6" />
+            <div className="h-16 w-96 bg-ink-black/10 mb-4" />
+            <div className="h-6 w-64 bg-ink-black/10" />
+          </div>
+
+          {/* Skeleton cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-80 bg-paper-aged/50 border border-ink-black/10" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-paper-cream flex items-center justify-center p-8">
+        <div className="max-w-md w-full">
+          <div className="border-2 border-stamp-red p-1">
+            <div className="border border-stamp-red/30 p-8 text-center">
+              <div className="font-mono text-xs text-stamp-red/50 uppercase tracking-widest mb-8">
+                Error No. ANALYSIS-ERROR
+              </div>
+
+              <div className="w-20 h-20 border-2 border-stamp-red flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-10 h-10 text-stamp-red" strokeWidth={1.5} />
+              </div>
+
+              <h2 className="font-serif text-2xl text-ink-black mb-3">
+                Analysis Error
+              </h2>
+
+              <p className="font-sans text-sm text-pencil-gray mb-8 leading-relaxed">
+                {error}
+              </p>
+
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full bg-blueprint-navy text-paper-cream font-mono text-sm uppercase tracking-widest py-4 hover:bg-ink-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blueprint-navy"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -395,99 +149,287 @@ export default function CourseAnalysis() {
 
   if (!hasAccess) {
     return (
-      <div className="p-8 lg:p-12">
-        <div className="max-w-2xl mx-auto text-center py-16">
-          <div className="w-16 h-16 bg-blueprint-navy/10 flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-8 h-8 text-blueprint-navy" />
+      <div className="min-h-screen bg-paper-cream flex items-center justify-center p-8">
+        <div className="max-w-md w-full">
+          {/* Technical drawing border */}
+          <div className="border-2 border-blueprint-navy p-1">
+            <div className="border border-blueprint-navy/30 p-8 text-center">
+              {/* Drawing number */}
+              <div className="font-mono text-xs text-blueprint-navy/50 uppercase tracking-widest mb-8">
+                Drawing No. ANALYSIS-RESTRICTED
+              </div>
+
+              <div className="w-20 h-20 border-2 border-stamp-red flex items-center justify-center mx-auto mb-6 rotate-3">
+                <Lock className="w-10 h-10 text-stamp-red" strokeWidth={1.5} />
+              </div>
+
+              <h2 className="font-serif text-2xl text-ink-black mb-3">
+                Analysis Restricted
+              </h2>
+
+              <p className="font-sans text-sm text-pencil-gray mb-8 leading-relaxed">
+                Topic frequency analysis and chapter breakdowns require archive access.
+              </p>
+
+              <div className="space-y-3 mb-8 text-left">
+                {['Chapter frequency analysis', 'Section-level breakdowns', 'Technique correlation maps'].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 font-mono text-xs text-pencil-gray">
+                    <span className="text-stamp-red">—</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => navigate('/upgrade')}
+                className="w-full bg-blueprint-navy text-paper-cream font-mono text-sm uppercase tracking-widest py-4 hover:bg-ink-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blueprint-navy"
+              >
+                Unlock Access
+              </button>
+            </div>
           </div>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <h2 className="font-serif font-semibold text-ink-black text-2xl">
-              Topic Analysis Locked
-            </h2>
-            <span className="exam-stamp-red text-[9px] bg-paper-cream">RESTRICTED</span>
+
+          {/* Corner marks */}
+          <div className="flex justify-between mt-2 font-mono text-xs text-blueprint-navy/40 uppercase">
+            <span>Rev. A</span>
+            <span>Sheet 1 of 1</span>
           </div>
-          <p className="font-sans text-pencil-gray mb-4 max-w-md mx-auto">
-            Get detailed breakdowns for each topic including common question types, study strategies, and technique-specific guidance based on actual exam data.
-          </p>
-          <ul className="text-left max-w-sm mx-auto mb-8 space-y-2">
-            <li className="flex items-center gap-2 font-sans text-sm text-pencil-gray">
-              <ArrowRight className="w-4 h-4 text-blueprint-navy" />
-              Technique-by-technique breakdown
-            </li>
-            <li className="flex items-center gap-2 font-sans text-sm text-pencil-gray">
-              <ArrowRight className="w-4 h-4 text-blueprint-navy" />
-              Common traps from real exams
-            </li>
-            <li className="flex items-center gap-2 font-sans text-sm text-pencil-gray">
-              <ArrowRight className="w-4 h-4 text-blueprint-navy" />
-              Curated study strategies
-            </li>
-          </ul>
-          <button
-            onClick={() => navigate('/upgrade')}
-            className="btn-blueprint"
-          >
-            Unlock Analysis
-          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 lg:p-12 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-3">
-          <h1 className="font-serif font-semibold text-ink-black text-3xl lg:text-4xl">
-            Topic Analysis
-          </h1>
-          <span className="exam-stamp-red bg-paper-cream text-[9px]">ANALYSIS COMPLETE</span>
-        </div>
-        <p className="font-sans text-pencil-gray max-w-2xl">
-          Comprehensive breakdown of exam topics based on actual MTH240 midterms from 2015-2025.
-          Expand each chapter to see section-level statistics and technique-specific guidance.
-        </p>
-      </div>
+    <div ref={containerRef} className="min-h-screen bg-paper-cream relative overflow-hidden">
+      {/* Graph paper background with subtle texture */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{
+        backgroundImage: `
+          linear-gradient(var(--ink-black) 1px, transparent 1px),
+          linear-gradient(90deg, var(--ink-black) 1px, transparent 1px)
+        `,
+        backgroundSize: '24px 24px'
+      }} />
 
-      {/* Chapters */}
-      <div className="space-y-6">
-        {chapters.map((chapter) => (
-          <ChapterAccordion
-            key={chapter.id}
-            chapter={chapter}
-            courseSlug={slug!}
-            expandedSection={expandedSection}
-            onSectionToggle={handleSectionToggle}
-          />
-        ))}
-      </div>
+      {/* Paper grain overlay */}
+      <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+      }} />
 
-      {chapters.length === 0 && (
-        <div className="text-center py-16">
-          <p className="font-sans text-pencil-gray">
-            No analysis data available yet. Check back soon!
-          </p>
-        </div>
-      )}
+      <style>{`
+        .chapter-card {
+          transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .chapter-card:focus-visible {
+          outline: 2px solid #1E3A5F;
+          outline-offset: 4px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .chapter-card {
+            transition: none;
+            transform: none !important;
+          }
+        }
+      `}</style>
 
-      {/* Study Tip */}
-      <div className="mt-12 index-card p-6 bg-gradient-to-br from-paper-cream to-paper-aged border-l-4 border-l-blueprint-navy">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-blueprint-navy flex items-center justify-center flex-shrink-0">
-            <Lightbulb className="w-5 h-5 text-paper-cream" />
+      <div className="relative z-10">
+        {/* Header Section */}
+        <header className="p-6 lg:p-12 border-b border-ink-black/10">
+          <div className="max-w-7xl mx-auto">
+            {/* Breadcrumb / Path */}
+            <div className="flex items-center gap-2 mb-6 font-mono text-xs uppercase tracking-widest text-pencil-gray">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span className="uppercase">{slug}</span>
+              <span className="text-pencil-gray/40">/</span>
+              <span>Analysis</span>
+            </div>
+
+            {/* Main Title */}
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+              <div>
+                <h1 className="font-serif text-5xl lg:text-7xl text-ink-black leading-[0.9] tracking-tight">
+                  Topic
+                  <br />
+                  <span className="text-blueprint-navy">Analysis</span>
+                </h1>
+                <p className="mt-4 font-sans text-pencil-gray max-w-lg leading-relaxed">
+                  Frequency analysis of exam topics from 2015–2025.
+                  Based on {chapters.reduce((acc, c) => acc + c.totalQuestions, 0)} questions across {chapters.length} chapters.
+                </p>
+              </div>
+
+              {/* Legend */}
+              <div className="flex items-center gap-6 font-mono text-xs uppercase tracking-widest">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-stamp-red" />
+                  <span className="text-pencil-gray">Critical</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blueprint-navy" />
+                  <span className="text-pencil-gray">Core</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-pencil-gray" />
+                  <span className="text-pencil-gray">Supplemental</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="font-serif font-semibold text-ink-black text-lg mb-2">
-              Study Strategy
-            </h3>
-            <p className="font-sans text-pencil-gray text-sm leading-relaxed">
-              Focus on high-frequency sections first (shown in navy blue). Click "Details" on any
-              technique to see common traps students fall into and proven strategies from actual
-              exam performance data.
-            </p>
+        </header>
+
+        {/* Chapter Cards - Scattered Desk Layout */}
+        <main className="p-6 lg:p-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+              {chapters.map((chapter, index) => {
+                const stamp = getChapterStamp(chapter.frequencyScore);
+                const rotation = reducedMotion ? '0deg' : getRotation(index);
+                const offset = reducedMotion ? 0 : getOffset(index);
+                const isHovered = hoveredChapter === chapter.id;
+
+                return (
+                  <div
+                    key={chapter.id}
+                    className="chapter-card relative group cursor-pointer"
+                    style={{
+                      transform: `rotate(${rotation}) translateY(${offset}px)`,
+                    }}
+                    onMouseEnter={() => setHoveredChapter(chapter.id)}
+                    onMouseLeave={() => setHoveredChapter(null)}
+                    onClick={() => handleChapterClick(chapter.id)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Chapter ${chapter.chapterNum}: ${chapter.name}`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleChapterClick(chapter.id);
+                      }
+                    }}
+                  >
+                    {/* Shadow layer */}
+                    <div
+                      className="absolute inset-0 bg-ink-black/10 transition-all duration-300"
+                      style={{
+                        transform: isHovered ? 'translate(8px, 8px)' : 'translate(4px, 4px)',
+                      }}
+                    />
+
+                    {/* Main card */}
+                    <div
+                      className="relative bg-paper-aged border border-ink-black/20 transition-all duration-300"
+                      style={{
+                        transform: isHovered ? 'translate(-4px, -4px)' : 'translate(0, 0)',
+                      }}
+                    >
+                      {/* Technical border corners - standardized to 2px */}
+                      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blueprint-navy" />
+                      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blueprint-navy" />
+                      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blueprint-navy" />
+                      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blueprint-navy" />
+
+                      <div className="p-6 lg:p-8">
+                        {/* Top bar: Chapter number + Stamp */}
+                        <div className="flex items-start justify-between mb-6">
+                          <div className="flex items-baseline gap-3">
+                            <span className="font-serif text-6xl lg:text-7xl text-ink-black/10 font-bold leading-none">
+                              {chapter.chapterNum}
+                            </span>
+                            <span className="font-mono text-xs uppercase tracking-widest text-pencil-gray">
+                              Ch. {chapter.chapterNum}
+                            </span>
+                          </div>
+
+                          {stamp && (
+                            <div
+                              className={`px-3 py-1.5 font-mono text-xs uppercase tracking-widest border-2 rotate-[-3deg] ${
+                                stamp === 'CRITICAL'
+                                  ? 'border-stamp-red text-stamp-red bg-stamp-red/5'
+                                  : stamp === 'CORE'
+                                  ? 'border-blueprint-navy text-blueprint-navy bg-blueprint-navy/5'
+                                  : 'border-pencil-gray text-pencil-gray bg-pencil-gray/5'
+                              }`}
+                            >
+                              {stamp}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Chapter title */}
+                        <h2 className="font-serif text-2xl lg:text-3xl text-ink-black mb-4 leading-tight">
+                          {chapter.name}
+                        </h2>
+
+                        {/* Stats row */}
+                        <div className="flex items-center gap-6 mb-6 font-mono text-xs text-pencil-gray">
+                          <div className="flex items-center gap-2">
+                            <Grid3X3 className="w-3.5 h-3.5" />
+                            <span>{chapter.totalQuestions} questions</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Compass className="w-3.5 h-3.5" />
+                            <span>{chapter.sections.length} sections</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-pencil-gray/40">Freq:</span>
+                            <span>{Math.round(chapter.frequencyScore * 100)}%</span>
+                          </div>
+                        </div>
+
+                        {/* Section preview */}
+                        <div className="space-y-2">
+                          {chapter.sections.slice(0, 3).map((section) => (
+                            <div
+                              key={section.id}
+                              className="flex items-center justify-between py-2 border-b border-ink-black/5 last:border-0"
+                            >
+                              <span className="font-sans text-sm text-pencil-gray">
+                                {section.sectionNum} {section.name}
+                              </span>
+                              <span className="font-mono text-xs text-pencil-gray/60">
+                                {section.totalQuestions}
+                              </span>
+                            </div>
+                          ))}
+                          {chapter.sections.length > 3 && (
+                            <div className="font-mono text-xs text-pencil-gray/40 uppercase tracking-widest pt-1">
+                              +{chapter.sections.length - 3} more sections
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action hint */}
+                        <div className="mt-6 pt-4 border-t border-ink-black/10 flex items-center justify-between">
+                          <span className="font-mono text-xs uppercase tracking-widest text-pencil-gray/60">
+                            Click to explore
+                          </span>
+                          <ArrowRight
+                            className={`w-4 h-4 text-blueprint-navy transition-transform duration-300 ${
+                              isHovered ? 'translate-x-1' : ''
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </main>
+
+        {/* Footer note */}
+        <footer className="p-6 lg:p-12 border-t border-ink-black/10">
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4 font-mono text-xs uppercase tracking-widest text-pencil-gray/60">
+            <div className="flex items-center gap-4">
+              <span>Drawing No. ANALYSIS-{slug?.toUpperCase()}-2025</span>
+              <span className="text-pencil-gray/30">|</span>
+              <span>Rev. B</span>
+            </div>
+            <div>
+              Based on exam data 2015–2025
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

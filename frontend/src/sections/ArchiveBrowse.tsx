@@ -4,7 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ExternalLink, FileText, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../lib/api';
-import LatexRenderer from '../components/LatexRenderer';
+import LatexRenderer, { LatexDisplay } from '../components/LatexRenderer';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -198,8 +198,7 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
     <section
       ref={sectionRef}
       id="archive"
-      className={`py-20 lg:py-28 ${className}`}
-      style={{ backgroundColor: '#F5F1E8' }}
+      className={`py-20 lg:py-28 bg-paper-cream ${className}`}
     >
       {/* Graph paper background */}
       <div className="absolute inset-0 graph-paper" />
@@ -312,8 +311,8 @@ export default function ArchiveBrowse({ className = '' }: ArchiveBrowseProps) {
                   <p className="font-sans text-pencil-gray text-sm mb-4">
                     Evaluate:
                   </p>
-                  <div className="font-mono text-xl lg:text-2xl text-ink-black mb-6">
-                    <LatexRenderer tex={featuredQuestion.question_text} />
+                  <div className="font-mono text-lg lg:text-xl text-ink-black mb-6 leading-relaxed">
+                    <LatexDisplay tex={featuredQuestion.question_text} />
                   </div>
                   <div className="w-full h-px bg-pencil-gray/20 mb-6" />
                   <p className="font-condensed text-pencil-gray text-[10px] uppercase tracking-widest">

@@ -106,8 +106,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
     <section
       ref={sectionRef}
       id="hero"
-      className={`min-h-screen flex items-center py-20 lg:py-0 ${className}`}
-      style={{ backgroundColor: '#F5F1E8' }}
+      className={`min-h-screen flex items-center py-20 lg:py-0 bg-paper-cream ${className}`}
     >
       {/* Graph paper background */}
       <div className="absolute inset-0 graph-paper" />
@@ -133,7 +132,7 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
 
       {/* Content */}
       <div className="relative z-10 w-full px-8 lg:px-[8vw] pt-20 lg:pt-24">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-0">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-16">
           {/* Left content */}
           <div className="max-w-xl">
             {/* Date stamp */}
@@ -141,23 +140,19 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
               <span className="date-stamp">2022—2024 Collection</span>
             </div>
 
-            {/* Headline */}
+            {/* Headline - Single H1 for SEO/accessibility */}
             <div ref={headlineRef} className="mb-6">
-              <div className="headline-line overflow-hidden">
-                <h1 className="font-serif font-semibold text-ink-black text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-none">
-                  Know The Exam
-                </h1>
-              </div>
-              <div className="headline-line overflow-hidden">
-                <h1 className="font-serif font-semibold text-ink-black text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-none">
-                  Before You
-                </h1>
-              </div>
-              <div className="headline-line overflow-hidden">
-                <h1 className="font-serif font-semibold text-blueprint-navy text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-none hand-highlight">
-                  Walk In
-                </h1>
-              </div>
+              <h1 className="font-serif font-semibold text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-none">
+                <span className="headline-line block overflow-hidden">
+                  <span className="block text-ink-black">Know The Exam</span>
+                </span>
+                <span className="headline-line block overflow-hidden">
+                  <span className="block text-ink-black">Before You</span>
+                </span>
+                <span className="headline-line block overflow-hidden">
+                  <span className="block text-blueprint-navy hand-highlight">Walk In</span>
+                </span>
+              </h1>
             </div>
 
             {/* Subheadline */}
@@ -179,22 +174,22 @@ export default function HeroSection({ className = '' }: HeroSectionProps) {
               ))}
             </div>
 
-            {/* CTAs - cleaner, less aggressive */}
+            {/* CTAs - Primary button prominent, secondary outlined */}
             <div ref={ctaRef} className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={scrollToArchive}
-                className="btn-blueprint inline-flex items-center justify-center gap-2 group"
-              >
-                Browse the Archive
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
-              </button>
               <Link
                 to="/signup"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors"
+                className="btn-blueprint inline-flex items-center justify-center gap-2 order-first sm:order-last"
               >
                 <UserPlus className="w-4 h-4" strokeWidth={1.5} />
                 Sign Up Free
               </Link>
+              <button
+                onClick={scrollToArchive}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 font-condensed text-xs uppercase tracking-widest text-blueprint-navy border border-blueprint-navy hover:bg-blueprint-navy hover:text-paper-cream transition-colors min-touch-target"
+              >
+                Browse the Archive
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
+              </button>
             </div>
           </div>
 
