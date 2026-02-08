@@ -152,3 +152,43 @@ export function getDifficultyLabel(diff: number): string {
   if (diff <= 3) return 'Medium';
   return 'Hard';
 }
+
+// ============================================================================
+// Topic Analysis Display Types (for TopicAnalysisDisplay component)
+// ============================================================================
+
+export interface SampleQuestion {
+  id: string;
+  question_text: string;
+  difficulty: number;
+  points: number;
+  year: number;
+  semester: string;
+  exam_type: string;
+}
+
+export interface AnalysisDetailedResponse {
+  credits_deducted?: number;
+  chapters: Chapter[];
+  globalStats?: {
+    totalQuestions: number;
+    totalExams: number;
+    avgDifficulty: number;
+    avgTime: number;
+    frequencyScore: number;
+  };
+  patterns?: {
+    id: string;
+    name: string;
+    description: string;
+    frequency: number;
+  }[];
+}
+
+export interface AnalysisError {
+  type: 'payment_required' | 'not_found' | 'network_error' | 'unknown';
+  message: string;
+  retryable: boolean;
+}
+
+export type LoadingState = 'idle' | 'loading' | 'success' | 'error';

@@ -958,7 +958,7 @@ app.get('/api/courses/:id/topics', requireAuth, async (c) => {
   return c.json({ topics: topics.results ?? [] });
 });
 
-// Topic detail with analysis
+// Topic detail with full CODEX-compliant analysis (study briefing)
 app.get('/api/courses/:courseId/topics/:topicId', requireAuth, async (c) => {
   const courseId = c.req.param('courseId');
   const topicId = c.req.param('topicId');
@@ -968,47 +968,511 @@ app.get('/api/courses/:courseId/topics/:topicId', requireAuth, async (c) => {
   const topic = await db.prepare('SELECT * FROM topics WHERE id = ? AND course_id = ?').bind(topicId, courseId).first<any>();
   if (!topic) return c.json({ error: 'Topic not found' }, 404);
 
-  // Get sample questions for this topic
+  // Get all questions for this topic with exam metadata
   const questionsResult = await db.prepare(`
-    SELECT q.*, e.year, e.semester, e.exam_type
+    SELECT q.*, e.year, e.semester, e.exam_type, e.id as exam_id
     FROM questions q
     LEFT JOIN exams e ON q.exam_id = e.id
     WHERE q.topic_id = ?
-    ORDER BY q.difficulty DESC
-    LIMIT 5
+    ORDER BY q.difficulty DESC, e.year DESC
   `).bind(topicId).all();
 
-  // Get frequency stats
-  const examCount = await db.prepare('SELECT COUNT(*) as count FROM exams WHERE course_id = ?').bind(courseId).first<{ count: number }>();
-  const topicAppearances = await db.prepare('SELECT COUNT(*) as count FROM questions WHERE topic_id = ?').bind(topicId).first<{ count: number }>();
+  const questions = (questionsResult.results ?? []) as any[];
 
-  // Calculate average difficulty and points
-  const stats = await db.prepare(`
-    SELECT AVG(difficulty) as avg_difficulty, AVG(points) as avg_points
-    FROM questions WHERE topic_id = ?
-  `).bind(topicId).first<any>();
+  // Get total exam count for frequency calculation
+  const examCountResult = await db.prepare('SELECT COUNT(*) as count FROM exams WHERE course_id = ?').bind(courseId).first<{ count: number }>();
+  const totalExams = examCountResult?.count ?? 1;
+
+  // Compute stats
+  const appearanceCount = questions.length;
+  const appearanceRate = appearanceCount / totalExams;
+  const lastSeenYear = questions.length > 0 ? Math.max(...questions.map(q => q.year || 2020)) : 2020;
+  const currentYear = new Date().getFullYear();
+  const recencyScore = lastSeenYear >= currentYear - 1 ? 1.0 : lastSeenYear >= currentYear - 3 ? 0.7 : 0.4;
+
+  // Difficulty distribution
+  const difficultyDistribution: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+  questions.forEach(q => {
+    const diff = Math.round(q.difficulty || 3);
+    difficultyDistribution[diff.toString()] = (difficultyDistribution[diff.toString()] || 0) + 1;
+  });
+
+  // Average stats
+  const avgDifficulty = questions.length > 0 ? questions.reduce((sum, q) => sum + (q.difficulty || 3), 0) / questions.length : 3;
+  const avgPoints = questions.length > 0 ? questions.reduce((sum, q) => sum + (q.points || 10), 0) / questions.length : 10;
+  const avgTime = questions.length > 0 ? questions.reduce((sum, q) => sum + (q.estimated_time || 8), 0) / questions.length : 8;
+
+  // Parse techniques and count frequency
+  const techniqueCounts: Record<string, number> = {};
+  questions.forEach(q => {
+    try {
+      const techniques = JSON.parse(q.techniques || '[]');
+      techniques.forEach((tech: string) => {
+        techniqueCounts[tech] = (techniqueCounts[tech] || 0) + 1;
+      });
+    } catch {
+      // Skip malformed techniques
+    }
+  });
+
+  const techniques = Object.entries(techniqueCounts)
+    .map(([id, count]) => ({ id, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // Detect patterns using regex on question text
+  const patterns = detectPatterns(questions, totalExams);
+
+  // Generate question types based on patterns
+  const questionTypes = generateQuestionTypes(topicId, patterns);
+
+  // Get 2-3 representative examples
+  const examples = questions.slice(0, 3).map(q => ({
+    id: q.id,
+    question_text: q.question_text,
+    difficulty: q.difficulty,
+    points: q.points,
+    exam: {
+      year: q.year,
+      semester: q.semester,
+      type: q.exam_type,
+    },
+  }));
+
+  // Get static content for topic
+  const staticContent = getTopicStaticContent(topicId);
+
+  // Cross-topic links (topics that co-appear on same exams)
+  const crossTopicLinks = await getCrossTopicLinks(db, courseId, topicId, questions);
+
+  // Practice recommendation
+  const practiceRecommendation = {
+    target_questions: Math.min(appearanceCount, 6) || 6,
+    focus: patterns.slice(0, 2).map(p => p.name),
+    estimated_time_total: Math.round((avgTime || 8) * Math.min(appearanceCount, 6)),
+  };
 
   return c.json({
     topic: {
-      ...topic,
-      appearances: topicAppearances?.count ?? 0,
-      totalExams: examCount?.count ?? 0,
-      avgDifficulty: Math.round(stats?.avg_difficulty ?? 3),
-      avgPoints: Math.round(stats?.avg_points ?? 10),
+      id: topicId,
+      name: topic.name,
+      section: topic.section || '',
+      course_id: courseId,
+      category: topic.category || 'Topic',
+      description: staticContent.description || topic.description || `${topic.name} techniques and applications.`,
     },
-    sampleQuestions: questionsResult.results ?? [],
-    analysis: {
-      frequencyScore: topic.frequency_score ?? 0.5,
-      questionCount: topicAppearances?.count ?? 0,
-      commonDifficulties: ['Recognizing the correct approach', 'Algebraic simplification', 'Sign errors in integration'],
-      studyTips: [
-        `Practice ${topicAppearances?.count ?? 0}+ questions from past exams`,
-        'Focus on the setup - most errors happen in the first step',
-        'Time yourself: aim for 8-12 minutes per question',
-      ],
+    stats: {
+      appearance_count: appearanceCount,
+      appearance_rate: Math.round(appearanceRate * 100) / 100,
+      last_seen_year: lastSeenYear,
+      recency_score: recencyScore,
+      avg_difficulty: Math.round(avgDifficulty * 10) / 10,
+      difficulty_distribution: difficultyDistribution,
+      avg_points: Math.round(avgPoints * 10) / 10,
+      avg_time_minutes: Math.round(avgTime),
     },
+    patterns,
+    question_types: questionTypes,
+    techniques,
+    pitfalls: staticContent.pitfalls || ['Common errors in this topic'],
+    examples,
+    cross_topic_links: crossTopicLinks,
+    study_strategy: staticContent.study_strategy || ['Practice regularly', 'Review solutions', 'Time yourself'],
+    practice_recommendation: practiceRecommendation,
+    confidence_checklist: staticContent.confidence_checklist || ['Can solve basic problems', 'Can handle variations'],
   });
 });
+
+// Helper function to detect patterns in questions
+function detectPatterns(questions: any[], totalExams: number): Array<{
+  pattern_id: string;
+  name: string;
+  canonical_form: string;
+  appearance_count: number;
+  appearance_rate: number;
+  example_question_ids: string[];
+}> {
+  const patterns: Array<{
+    pattern_id: string;
+    name: string;
+    canonical_form: string;
+    regex: RegExp;
+    count: number;
+    examples: string[];
+  }> = [
+    {
+      pattern_id: 'cyclic_ibp_exp_trig',
+      name: 'Cyclic IBP with exp/trig',
+      canonical_form: '∫ e^{ax} sin(bx) dx or ∫ e^{ax} cos(bx) dx',
+      regex: /e\^\{?[^}]*\}?.*\\sin|e\^\{?[^}]*\}?.*\\cos|\\sin.*e\^|\\cos.*e\^/i,
+      count: 0,
+      examples: [],
+    },
+    {
+      pattern_id: 'ibp_log_polynomial',
+      name: 'IBP with logarithmic',
+      canonical_form: '∫ x^n ln(x) dx',
+      regex: /\\ln|log.*x\^|x\^.*\\ln/i,
+      count: 0,
+      examples: [],
+    },
+    {
+      pattern_id: 'inverse_trig',
+      name: 'Inverse trigonometric',
+      canonical_form: '∫ involving arctan, arcsin, arccos',
+      regex: /\\arctan|\\arcsin|\\arccos|\\tan\^\{-1\}|\\sin\^\{-1\}|\\cos\^\{-1\}/i,
+      count: 0,
+      examples: [],
+    },
+    {
+      pattern_id: 'trig_identity',
+      name: 'Trigonometric identity',
+      canonical_form: 'sin²(x), cos²(x), tan²(x) using identities',
+      regex: /sin\^2|cos\^2|tan\^2|sin²|cos²|tan²/i,
+      count: 0,
+      examples: [],
+    },
+    {
+      pattern_id: 'partial_fractions',
+      name: 'Partial fraction decomposition',
+      canonical_form: '∫ P(x)/Q(x) dx with factoring',
+      regex: /frac\{[^}]+\}\{[^}]+\}|partial fraction|decompose/i,
+      count: 0,
+      examples: [],
+    },
+  ];
+
+  questions.forEach(q => {
+    const text = q.question_text || '';
+    patterns.forEach(p => {
+      if (p.regex.test(text) && p.examples.length < 2) {
+        p.count++;
+        p.examples.push(q.id);
+      }
+    });
+  });
+
+  return patterns
+    .filter(p => p.count > 0)
+    .map(p => ({
+      pattern_id: p.pattern_id,
+      name: p.name,
+      canonical_form: p.canonical_form,
+      appearance_count: p.count,
+      appearance_rate: Math.round((p.count / totalExams) * 100) / 100,
+      example_question_ids: p.examples,
+    }))
+    .sort((a, b) => b.appearance_count - a.appearance_count)
+    .slice(0, 5);
+}
+
+// Helper function to generate question types based on patterns
+function generateQuestionTypes(topicId: string, patterns: any[]): string[] {
+  const typeMap: Record<string, string[]> = {
+    'integration_by_parts': [
+      'Evaluate ∫ x^n e^{ax} dx using IBP',
+      'Evaluate ∫ e^{ax} sin(bx) dx (cyclic IBP)',
+      'Evaluate ∫ x^n ln(x) dx with u = ln(x)',
+    ],
+    'trig_integrals': [
+      'Evaluate ∫ sin^n(x) cos^m(x) dx',
+      'Evaluate ∫ tan^n(x) sec^m(x) dx',
+      'Use trig identities to simplify and integrate',
+    ],
+    'trig_substitution': [
+      'Evaluate ∫ involving √(a² - x²) using x = a sin(θ)',
+      'Evaluate ∫ involving √(a² + x²) using x = a tan(θ)',
+      'Evaluate ∫ involving √(x² - a²) using x = a sec(θ)',
+    ],
+    'partial_fractions': [
+      'Decompose and integrate rational function P(x)/Q(x)',
+      'Evaluate ∫ with repeated linear factors',
+      'Evaluate ∫ with irreducible quadratic factors',
+    ],
+    'improper_integrals': [
+      'Evaluate integral with infinite bound',
+      'Evaluate integral with discontinuity',
+      'Determine convergence using comparison test',
+    ],
+    'sequences': [
+      'Find limit of sequence a_n',
+      'Determine if sequence is monotonic',
+      'Find recursive formula',
+    ],
+    'series_convergence': [
+      'Determine convergence using ratio test',
+      'Determine convergence using root test',
+      'Apply comparison test for convergence',
+    ],
+    'power_series': [
+      'Find radius of convergence',
+      'Find interval of convergence',
+      'Represent function as power series',
+    ],
+    'taylor_series': [
+      'Find Taylor series expansion',
+      'Estimate using Taylor polynomial',
+      'Find Maclaurin series',
+    ],
+  };
+
+  const defaults = [
+    'Evaluate the integral using appropriate technique',
+    'Simplify and solve step by step',
+    'Apply the fundamental approach for this topic',
+  ];
+
+  return typeMap[topicId] || patterns.map(p => p.name) || defaults;
+}
+
+// Helper function to get static content for a topic
+function getTopicStaticContent(topicId: string): {
+  description: string;
+  pitfalls: string[];
+  study_strategy: string[];
+  confidence_checklist: string[];
+} {
+  const contentMap: Record<string, {
+    description: string;
+    pitfalls: string[];
+    study_strategy: string[];
+    confidence_checklist: string[];
+  }> = {
+    'integration_by_parts': {
+      description: 'Integration by Parts (IBP) is used when integrating products of functions. Master choosing u and dv using the LIATE rule, and recognize cyclic patterns that require solving for the original integral.',
+      pitfalls: [
+        'Incorrect u/dv choice leads to harder algebra instead of simplification',
+        'Missing the cyclic pattern and not solving for the original integral',
+        'Sign errors when applying the IBP formula repeatedly',
+        'Forgetting to include the constant of integration',
+      ],
+      study_strategy: [
+        'Master LIATE rule for choosing u: Logs, Inverse trig, Algebraic, Trig, Exponentials',
+        'Practice cyclic IBP until you can solve in 2-3 passes without algebra errors',
+        'Start with standard forms: x^n e^x, x^n ln(x), e^x sin(x) before variations',
+        'Time yourself: aim for 8-12 minutes per problem',
+      ],
+      confidence_checklist: [
+        'Can identify IBP applicability in ≤10 seconds',
+        'Can apply LIATE rule correctly without hesitation',
+        'Can solve cyclic IBP (exp/trig) without algebra errors',
+        'Average time per problem ≤ 10 minutes',
+        'Can handle variations with substitution first',
+      ],
+    },
+    'trig_integrals': {
+      description: 'Trigonometric integrals involve integrating powers of sine, cosine, tangent, and secant. Key techniques include using identities, u-substitution, and reduction formulas.',
+      pitfalls: [
+        'Choosing wrong identity for the power combination',
+        'Missing u-substitution opportunity with sin/cos pairs',
+        'Incorrect handling of odd/even powers',
+        'Forgetting to convert tan/sec to sin/cos when stuck',
+      ],
+      study_strategy: [
+        'Memorize key identities: sin² + cos² = 1, 1 + tan² = sec²',
+        'Learn the pattern: odd power → save one factor, even power → use identity',
+        'Practice converting between tan/sec and sin/cos forms',
+        'Master the standard integrals: ∫ tan(x), ∫ sec(x), ∫ sec³(x)',
+      ],
+      confidence_checklist: [
+        'Can identify which identity to use in ≤5 seconds',
+        'Can handle both odd and even power combinations',
+        'Know when to convert tan/sec to sin/cos',
+        'Have memorized standard trig integrals',
+        'Can complete problem in 8-12 minutes',
+      ],
+    },
+    'trig_substitution': {
+      description: 'Trigonometric substitution handles integrals containing √(a²-x²), √(a²+x²), or √(x²-a²). The key is recognizing the form and applying the correct substitution.',
+      pitfalls: [
+        'Using wrong substitution for the radical form',
+        'Algebra errors when simplifying after substitution',
+        'Forgetting to convert back to original variable',
+        'Not completing the square when necessary',
+      ],
+      study_strategy: [
+        'Memorize the three forms: √(a²-x²)→x=a sin θ, √(a²+x²)→x=a tan θ, √(x²-a²)→x=a sec θ',
+        'Practice drawing the reference triangle for each substitution',
+        'Master simplifying √(expression)² = |expression| handling',
+        'Learn when completing the square is needed first',
+      ],
+      confidence_checklist: [
+        'Can identify which substitution to use immediately',
+        'Can draw reference triangle quickly',
+        'Can handle dx conversion without errors',
+        'Remember to convert back to original variable',
+        'Can handle completing the square when needed',
+      ],
+    },
+    'partial_fractions': {
+      description: 'Partial fraction decomposition breaks complex rational functions into simpler fractions that can be integrated directly. Essential for rational functions where denominator degree > numerator degree.',
+      pitfalls: [
+        'Not ensuring proper rational function (degree check) first',
+        'Algebra errors in solving for coefficients',
+        'Missing repeated factor cases',
+        'Incorrect handling of irreducible quadratics',
+      ],
+      study_strategy: [
+        'Always check: if deg(num) ≥ deg(den), do long division first',
+        'Master factoring denominator completely',
+        'Learn the pattern for repeated linear factors: A/(x-a) + B/(x-a)² + ...',
+        'Practice cover-up method for simple linear factors',
+      ],
+      confidence_checklist: [
+        'Remember to check degree and do long division if needed',
+        'Can factor denominators completely',
+        'Can set up partial fraction form correctly',
+        'Can solve for coefficients efficiently',
+        'Can handle repeated and irreducible cases',
+      ],
+    },
+    'improper_integrals': {
+      description: 'Improper integrals involve infinite limits of integration or integrands with infinite discontinuities. Understanding convergence tests is crucial for determining if the integral exists.',
+      pitfalls: [
+        'Treating infinite limit like finite - not using limits',
+        'Missing discontinuity within integration interval',
+        'Wrong comparison function for convergence tests',
+        'Forgetting p-test: ∫₁^∞ 1/x^p converges iff p > 1',
+      ],
+      study_strategy: [
+        'Always rewrite as limit first: ∞ becomes lim(t→∞)',
+        'Split integral at discontinuities before evaluating',
+        'Master p-test for comparison: know when 1/x^p converges',
+        'Practice direct comparison vs limit comparison test',
+      ],
+      confidence_checklist: [
+        'Always rewrite improper integrals using limits',
+        'Can identify and split at discontinuities',
+        'Have p-test memorized forward and backward',
+        'Can choose appropriate comparison functions',
+        'Know when integral diverges vs converges',
+      ],
+    },
+    'sequences': {
+      description: 'Sequences are ordered lists of numbers defined by explicit or recursive formulas. Key skills include finding limits, determining monotonicity, and identifying boundedness.',
+      pitfalls: [
+        'Confusing sequence limit with series sum',
+        'Not checking both monotonicity and boundedness',
+        'Algebra errors in recursive calculations',
+        "Forgetting L'Hopital requires differentiable functions",
+      ],
+      study_strategy: [
+        "Master limit techniques: L'Hopital, squeeze theorem, continuity",
+        'Learn to prove monotonicity: a_{n+1} - a_n or a_{n+1}/a_n',
+        'Practice finding closed forms for recursive sequences',
+        'Know the theorem: bounded + monotonic → convergent',
+      ],
+      confidence_checklist: [
+        'Can compute sequence limits reliably',
+        'Can prove monotonicity using difference or ratio',
+        'Can identify boundedness',
+        'Know when to apply monotone convergence theorem',
+        'Can work with recursive definitions',
+      ],
+    },
+    'series_convergence': {
+      description: 'Series convergence tests determine whether infinite sums have finite values. Each test has specific conditions where it works best - choosing the right test is the key skill.',
+      pitfalls: [
+        'Wrong test choice for the series form',
+        'Forgetting to check lim a_n = 0 (divergence test) first',
+        'Algebra errors in ratio/root test limits',
+        'Confusing absolute vs conditional convergence',
+      ],
+      study_strategy: [
+        'Always start with divergence test: if lim a_n ≠ 0, diverges',
+        'Learn test selection: geometric → ratio → root → comparison → integral',
+        'Master when to use alternating series test',
+        'Practice determining absolute vs conditional convergence',
+      ],
+      confidence_checklist: [
+        'Always apply divergence test first',
+        'Can choose appropriate convergence test',
+        'Can apply ratio and root tests accurately',
+        'Understand comparison test logic',
+        'Can determine absolute vs conditional convergence',
+      ],
+    },
+    'power_series': {
+      description: 'Power series represent functions as infinite polynomials. Finding radius and interval of convergence is essential, along with representing functions as power series.',
+      pitfalls: [
+        'Not checking endpoints for interval of convergence',
+        'Algebra errors in ratio test for radius',
+        'Forgetting |x-a| < R form for center a',
+        'Wrong manipulation of known series',
+      ],
+      study_strategy: [
+        'Master ratio test for radius: lim |a_{n+1}/a_n| = L, R = 1/L',
+        'Always test endpoints separately in original series',
+        'Memorize key series: 1/(1-x), e^x, sin(x), cos(x), ln(1+x)',
+        'Learn differentiation and integration of power series term by term',
+      ],
+      confidence_checklist: [
+        'Can find radius using ratio test reliably',
+        'Always remember to test endpoints',
+        'Have standard power series memorized',
+        'Can manipulate known series (substitution, differentiation)',
+        'Can represent functions as power series',
+      ],
+    },
+    'taylor_series': {
+      description: 'Taylor series approximate functions using polynomials centered at a point. Maclaurin series are Taylor series centered at 0. Essential for approximation and estimation.',
+      pitfalls: [
+        'Sign errors in alternating Taylor terms',
+        'Wrong factorial in denominator',
+        'Not computing derivatives correctly at center',
+        'Forgetting remainder term for error estimation',
+      ],
+      study_strategy: [
+        'Master Taylor formula: f(a) + f\'(a)(x-a) + f\'\'(a)(x-a)²/2! + ...',
+        'Memorize Maclaurin series for e^x, sin(x), cos(x), 1/(1-x)',
+        'Practice computing derivatives at center point',
+        'Learn Lagrange error bound for remainder estimation',
+      ],
+      confidence_checklist: [
+        'Can write Taylor series formula from memory',
+        'Have Maclaurin series memorized',
+        'Can compute derivatives at center accurately',
+        'Can find Taylor polynomial of specified degree',
+        'Can estimate error using remainder term',
+      ],
+    },
+  };
+
+  return contentMap[topicId] || {
+    description: `Study guide for ${topicId}.`,
+    pitfalls: ['Practice common error patterns', 'Check your algebra carefully'],
+    study_strategy: ['Review fundamental concepts', 'Practice with past exam questions'],
+    confidence_checklist: ['Can solve basic problems', 'Can handle exam-level difficulty'],
+  };
+}
+
+// Helper function to get cross-topic links
+async function getCrossTopicLinks(db: any, courseId: string, topicId: string, questions: any[]): Promise<Array<{ topic_id: string; coappear_rate: number }>> {
+  if (questions.length === 0) return [];
+
+  // Get exam IDs where this topic appears
+  const examIds = [...new Set(questions.map(q => q.exam_id).filter(Boolean))];
+  if (examIds.length === 0) return [];
+
+  // Find other topics that appear on the same exams
+  const placeholders = examIds.map(() => '?').join(',');
+  const coappearing = await db.prepare(`
+    SELECT q.topic_id, COUNT(DISTINCT q.exam_id) as coappear_count
+    FROM questions q
+    WHERE q.exam_id IN (${placeholders})
+    AND q.topic_id != ?
+    AND q.topic_id IS NOT NULL
+    GROUP BY q.topic_id
+  `).bind(...examIds, topicId).all();
+
+  const results = (coappearing.results ?? []) as any[];
+  return results
+    .map(r => ({
+      topic_id: r.topic_id,
+      coappear_rate: Math.round((r.coappear_count / examIds.length) * 100) / 100,
+    }))
+    .sort((a, b) => b.coappear_rate - a.coappear_rate)
+    .slice(0, 5);
+}
 
 // Question bundle (3 questions for 1 credit)
 app.post('/api/questions/bundle', requireAuth, async (c) => {

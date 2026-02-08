@@ -8,7 +8,7 @@
 
 ## Overview (Product Lens)
 
-Good question — the topic analysis should feel like a practical study briefing, not just stats. Here’s the detail set I’d include:
+the topic analysis should feel like a practical study briefing, not just stats. Here’s the detail set I’d include:
 
 - Topic overview: short plain‑language description of what the topic covers.
 - Exam frequency: how often it appears (count and % of exams).
@@ -20,10 +20,10 @@ Good question — the topic analysis should feel like a practical study briefing
 - Common tricks/pitfalls: why students miss these, based on past errors.
 - Technique breakdown: most frequent techniques used in the topic.
 - Representative examples: 2–3 example questions with metadata.
-- Cross‑topic links: related topics that co‑appear on the same exams.
 - Study strategy: prioritized approach (what to master first, what to skip).
 - Practice recommendations: suggested number of questions + targeted types.
 - Confidence checklist: criteria the student should meet before moving on.
+- Cross‑topic links: related topics that co‑appear on the same exams.
 
 ---
 
